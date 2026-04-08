@@ -5,6 +5,7 @@ export const createPaperSchema = z.object({
   sourcePlatform: z.string().trim().min(1).max(50).optional(),
   externalPaperId: z.string().trim().min(1).max(100).optional(),
   sourceUrl: z.string().trim().url().max(2048).optional(),
+  pdfUrl: z.string().trim().url().max(2048).optional(),
   title: z.string().trim().min(1).max(500),
   abstract: z.string().trim().min(1).max(20000),
   authors: z.array(z.string().trim().min(1).max(200)).max(100).default([]),

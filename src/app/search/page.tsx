@@ -1,5 +1,6 @@
 import { headers } from 'next/headers';
 import { ImportPaperButton } from '@/components/search/import-paper-button';
+import { UploadPaperForm } from '@/components/search/upload-paper-form';
 
 interface SearchPageProps {
   searchParams: Promise<{
@@ -18,6 +19,7 @@ interface SearchResultItem {
   source: string;
   sourcePlatform: string;
   sourceUrl: string;
+  pdfUrl?: string;
 }
 
 export default async function SearchPage({ searchParams }: SearchPageProps) {
@@ -82,6 +84,8 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
         </section>
       ) : null}
 
+      <UploadPaperForm />
+
       <section className="page-stack">
         {items.map((result) => (
           <article key={result.id} className="card" style={{ padding: '24px', display: 'grid', gap: '12px' }}>
@@ -98,6 +102,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                   sourcePlatform: result.sourcePlatform,
                   externalPaperId: result.id,
                   sourceUrl: result.sourceUrl,
+                  pdfUrl: result.pdfUrl,
                   title: result.title,
                   abstract: result.abstract,
                   authors: result.authors,
@@ -126,6 +131,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                     sourcePlatform: result.sourcePlatform,
                     externalPaperId: result.id,
                     sourceUrl: result.sourceUrl,
+                    pdfUrl: result.pdfUrl,
                     title: result.title,
                     abstract: result.abstract,
                     authors: result.authors,

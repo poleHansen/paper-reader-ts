@@ -29,7 +29,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           brand={<Link href="/">Paper Reader TS</Link>}
           navigation={[
             { href: '/', label: 'Papers' },
-            { href: '/search', label: 'Search' },
+            { href: '/search', label: 'Search & Upload' },
             { href: '/settings', label: 'Settings' },
           ]}
         >

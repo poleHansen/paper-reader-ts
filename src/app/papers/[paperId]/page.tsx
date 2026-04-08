@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ParsePaperButton } from '@/components/paper/parse-paper-button';
 import { getPaperById } from '@/lib/repositories/paper-repository';
+import { getLocalPaperFileInfo } from '@/lib/server/paper-file';
 
 export default async function PaperDetailPage({
   params,
@@ -16,149 +17,218 @@ export default async function PaperDetailPage({
   }
 
   const authors = parseJsonArray(paper.authorsJson);
+  const localFile = await getLocalPaperFileInfo(paper.originalFilePath);
+  const remoteViewerUrl = buildRemoteViewerUrl(paper.sourcePlatform, paper.sourceUrl);
+  const remoteOpenUrl = buildRemoteOpenUrl(paper.sourcePlatform, paper.sourceUrl);
+  const pdfViewerUrl = localFile ? `/api/papers/${paper.id}/file` : remoteViewerUrl;
+  const metrics = [
+    { label: '章节', value: paper.sections.length },
+    { label: '图表', value: paper.figures.length },
+    { label: '参考文献', value: paper.references.length },
+    { label: 'Agent 记录', value: paper.agentRuns.length },
+  ];
+  const quickActions = ['总结论文', '梳理论文大纲', '生成学习指南', '常见问题解答', '研究脉络'];
+  const conceptChips = [
+    paper.sourcePlatform ?? 'LOCAL',
+    paper.parseStatus ?? 'PENDING',
+    paper.analysisStatus ?? 'PENDING',
+    paper.year ? String(paper.year) : 'YEAR ?',
+  ];
 
   return (
-    <div className="page-stack">
-      <section className="card" style={{ padding: '28px', display: 'grid', gap: '12px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
-          <div style={{ display: 'grid', gap: '10px' }}>
-            <span className="pill">Paper detail</span>
-            <h1 style={{ margin: 0, fontSize: '42px' }}>{paper.title ?? 'Untitled paper'}</h1>
-            <p style={{ margin: 0, color: 'var(--muted)', maxWidth: '760px', lineHeight: 1.7 }}>
-              {paper.abstract ?? 'No abstract yet.'}
-            </p>
-          </div>
-          <div style={{ display: 'flex', gap: '12px', alignItems: 'start', flexWrap: 'wrap' }}>
-            <ParsePaperButton paperId={paper.id} />
-            <Link href="/search" style={secondaryButton}>
-              Import more papers
-            </Link>
-            <Link href="/" style={primaryButton}>
-              Back to list
+    <div className="reader-shell">
+      <aside className="reader-sidebar card">
+        <div className="reader-sidebar__section">
+          <div className="reader-sidebar__brand-row">
+            <span className="reader-sidebar__brand">阅读助手</span>
+            <Link href="/" style={sidebarGhostButton}>
+              返回列表
             </Link>
           </div>
         </div>
-      </section>
 
-      <section
-        style={{
-          display: 'grid',
-          gridTemplateColumns: '220px minmax(0, 1fr) 300px',
-          gap: '18px',
-          alignItems: 'start',
-        }}
-      >
-        <aside className="card" style={{ padding: '20px', display: 'grid', gap: '12px' }}>
-          {['Overview', 'Sections', 'Figures', 'References', 'Agent runs', 'Notes'].map((item, index) => (
-            <div key={item} style={{ fontWeight: index === 0 ? 700 : 500, color: index === 0 ? 'var(--accent)' : 'inherit' }}>
-              {item}
-            </div>
-          ))}
-        </aside>
+        <div className="reader-sidebar__section">
+          <div className="reader-sidebar__heading">核心概念速查</div>
+          <div className="reader-chip-list">
+            {conceptChips.map((item) => (
+              <span key={item} className="reader-chip">
+                {item}
+              </span>
+            ))}
+          </div>
+        </div>
 
-        <div className="page-stack">
-          <section className="card" style={{ padding: '24px', display: 'grid', gap: '16px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
-              <div>
-                <span className="pill">Overview</span>
-                <h2 style={{ margin: '10px 0 0', fontSize: '30px' }}>Paper metadata</h2>
-              </div>
-              <div style={{ color: 'var(--accent)', fontWeight: 700 }}>Status: {paper.status}</div>
-            </div>
-            <div
-              style={{
-                minHeight: '280px',
-                borderRadius: '20px',
-                background: '#fffaf1',
-                border: '1px solid var(--border)',
-                padding: '18px',
-                lineHeight: 1.75,
-                color: 'var(--foreground)',
-                display: 'grid',
-                gap: '12px',
-              }}
-            >
-              <div>
-                <strong>Source</strong>
-                <div>{paper.sourcePlatform ?? 'local'}{paper.externalPaperId ? ` · ${paper.externalPaperId}` : ''}</div>
-              </div>
-              <div>
-                <strong>Year</strong>
-                <div>{paper.year ?? 'Unknown'}</div>
-              </div>
-              <div>
-                <strong>Authors</strong>
-                <div>{authors.length > 0 ? authors.join(', ') : 'No authors imported yet.'}</div>
-              </div>
-              <div>
-                <strong>Original link</strong>
-                <div>
-                  {paper.sourceUrl ? (
-                    <a href={paper.sourceUrl} target="_blank" rel="noreferrer" style={{ color: 'var(--accent)', fontWeight: 700 }}>
-                      Open source
-                    </a>
-                  ) : (
-                    'No source URL yet.'
-                  )}
-                </div>
-              </div>
-            </div>
-          </section>
+        <div className="reader-sidebar__section">
+          <div className="reader-sidebar__heading">快速开始</div>
+          <div className="reader-action-list">
+            {quickActions.map((item) => (
+              <button key={item} type="button" className="reader-action-card">
+                {item}
+              </button>
+            ))}
+          </div>
+        </div>
 
-          <section className="card" style={{ padding: '24px', display: 'grid', gap: '14px' }}>
-            <h3 style={{ margin: 0, fontSize: '24px' }}>Parsed sections</h3>
-            <div style={{ color: 'var(--muted)', lineHeight: 1.7 }}>
-              Sections: {paper.sections.length} · Figures: {paper.figures.length} · References: {paper.references.length} · Agent runs: {paper.agentRuns.length}
+        <div className="reader-sidebar__section">
+          <div className="reader-sidebar__heading">论文信息</div>
+          <div className="reader-meta-list">
+            <div>
+              <span>作者</span>
+              <strong>{authors.length > 0 ? authors.slice(0, 3).join('、') : '待补充'}</strong>
             </div>
-            {paper.sections.length === 0 ? (
-              <div style={{ color: 'var(--muted)', lineHeight: 1.7 }}>
-                No parsed sections yet. Run parse to generate the first summary section from the imported abstract.
-              </div>
-            ) : (
-              <div style={{ display: 'grid', gap: '12px' }}>
-                {paper.sections.map((section) => (
-                  <article
-                    key={section.id}
-                    style={{
-                      padding: '16px',
-                      borderRadius: '18px',
-                      border: '1px solid var(--border)',
-                      background: '#fffaf1',
-                      display: 'grid',
-                      gap: '8px',
-                    }}
-                  >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
-                      <strong>{section.title ?? 'Untitled section'}</strong>
-                      <span style={{ color: 'var(--muted)', fontSize: '14px' }}>{section.sectionType}</span>
+            <div>
+              <span>来源</span>
+              <strong>{paper.sourcePlatform ?? 'local'}</strong>
+            </div>
+            <div>
+              <span>PDF</span>
+              <strong>{localFile ? formatFileSize(localFile.size) : '未上传'}</strong>
+            </div>
+          </div>
+        </div>
+
+        <div className="reader-sidebar__composer">
+          <input value="问问这篇学术论文" readOnly aria-label="Ask the paper" />
+          <span>{paper.sections.length} 段解析</span>
+        </div>
+      </aside>
+
+      <section className="reader-main">
+        <header className="reader-topbar card">
+          <div className="reader-topbar__actions">
+            <button type="button" className="reader-topbar__action reader-topbar__action--active">
+              全文翻译
+            </button>
+            <button type="button" className="reader-topbar__action">AI 重排</button>
+            <button type="button" className="reader-topbar__action">文字</button>
+          </div>
+          <div className="reader-topbar__links">
+            <Link href="/search" style={topbarLinkButton}>
+              文件夹
+            </Link>
+            {paper.sourceUrl ? (
+              <a href={paper.sourceUrl} target="_blank" rel="noreferrer" style={topbarLinkButton}>
+                原文
+              </a>
+            ) : null}
+          </div>
+        </header>
+
+        <article className="reader-paper-surface card">
+          <div className="reader-paper-page">
+            <div className="reader-paper-page__eyebrow">{paper.sourcePlatform ?? 'Paper'} · 智能阅读视图</div>
+            <h1 className="reader-paper-page__title">{paper.title ?? 'Untitled paper'}</h1>
+            <h2 className="reader-paper-page__subtitle">{buildChineseTitle(paper.title)}</h2>
+
+            <details className="reader-author-toggle">
+              <summary>Author</summary>
+              <div>{authors.length > 0 ? authors.join(', ') : 'No authors imported yet.'}</div>
+            </details>
+
+            <div className="reader-paper-page__content reader-paper-page__content--pdf">
+              {pdfViewerUrl ? (
+                <>
+                  {localFile ? (
+                    <div className="reader-paper-remote-banner">
+                      <span>当前预览的是本地 PDF 文件。</span>
+                      <a href={pdfViewerUrl} target="_blank" rel="noreferrer" style={topbarLinkButton}>
+                        在新标签打开 PDF
+                      </a>
                     </div>
-                    <div style={{ color: 'var(--muted)', lineHeight: 1.7 }}>{section.content}</div>
-                  </article>
-                ))}
-              </div>
-            )}
-          </section>
-        </div>
-
-        <aside className="page-stack">
-          <section className="card" style={{ padding: '20px', display: 'grid', gap: '12px' }}>
-            <span className="pill">Run status</span>
-            <strong>{paper.analysisStatus ?? 'pending'}</strong>
-            <div style={{ color: 'var(--muted)', lineHeight: 1.6 }}>
-              Parse: {paper.parseStatus ?? 'pending'}
+                  ) : remoteOpenUrl ? (
+                    <div className="reader-paper-remote-banner">
+                      <span>当前预览的是远程原文 PDF。</span>
+                      <a href={remoteOpenUrl} target="_blank" rel="noreferrer" style={topbarLinkButton}>
+                        在新标签打开
+                      </a>
+                    </div>
+                  ) : null}
+                  <iframe
+                    src={pdfViewerUrl}
+                    title={paper.title ?? 'PDF viewer'}
+                    className="reader-pdf-frame"
+                  />
+                </>
+              ) : (
+                <section className="reader-paper-section">
+                  <h3>
+                    原文预览
+                    <span>unavailable</span>
+                  </h3>
+                  <p>当前既没有本地 PDF，也没有可嵌入的远程原文地址。</p>
+                  {remoteOpenUrl ? (
+                    <p>
+                      <a href={remoteOpenUrl} target="_blank" rel="noreferrer" style={topbarLinkButton}>
+                        打开原文链接
+                      </a>
+                    </p>
+                  ) : null}
+                </section>
+              )}
             </div>
-          </section>
-          <section className="card" style={{ padding: '20px', display: 'grid', gap: '10px' }}>
-            <span className="pill">Timestamps</span>
-            <div style={{ color: 'var(--muted)', lineHeight: 1.6 }}>
-              Created: {new Intl.DateTimeFormat('zh-CN', { dateStyle: 'medium', timeStyle: 'short' }).format(paper.createdAt)}
-            </div>
-            <div style={{ color: 'var(--muted)', lineHeight: 1.6 }}>
-              Updated: {new Intl.DateTimeFormat('zh-CN', { dateStyle: 'medium', timeStyle: 'short' }).format(paper.updatedAt)}
-            </div>
-          </section>
-        </aside>
+          </div>
+        </article>
       </section>
+
+      <aside className="reader-inspector">
+        <section className="card" style={{ padding: '18px', display: 'grid', gap: '14px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', alignItems: 'center' }}>
+            <span className="pill">运行状态</span>
+            <strong style={{ color: 'var(--accent)' }}>{paper.status}</strong>
+          </div>
+          <div className="reader-stat-grid">
+            {metrics.map((item) => (
+              <div key={item.label} className="reader-stat-card">
+                <strong>{item.value}</strong>
+                <span>{item.label}</span>
+              </div>
+            ))}
+          </div>
+          <div className="reader-info-list">
+            <div>
+              <span>解析状态</span>
+              <strong>{paper.parseStatus ?? 'pending'}</strong>
+            </div>
+            <div>
+              <span>分析状态</span>
+              <strong>{paper.analysisStatus ?? 'pending'}</strong>
+            </div>
+            <div>
+              <span>年份</span>
+              <strong>{paper.year ?? 'Unknown'}</strong>
+            </div>
+            <div>
+              <span>本地文件</span>
+              <strong>{localFile ? localFile.relativePath : 'No local PDF saved yet.'}</strong>
+            </div>
+          </div>
+        </section>
+
+        <section className="card" style={{ padding: '18px', display: 'grid', gap: '12px' }}>
+          <span className="pill">操作</span>
+          <ParsePaperButton paperId={paper.id} />
+          <Link href="/search" style={secondaryButton}>
+            导入更多论文
+          </Link>
+          <Link href="/" style={primaryButton}>
+            回到列表
+          </Link>
+        </section>
+
+        <section className="card" style={{ padding: '18px', display: 'grid', gap: '10px' }}>
+          <span className="pill">时间</span>
+          <div className="reader-info-list">
+            <div>
+              <span>创建时间</span>
+              <strong>{new Intl.DateTimeFormat('zh-CN', { dateStyle: 'medium', timeStyle: 'short' }).format(paper.createdAt)}</strong>
+            </div>
+            <div>
+              <span>更新时间</span>
+              <strong>{new Intl.DateTimeFormat('zh-CN', { dateStyle: 'medium', timeStyle: 'short' }).format(paper.updatedAt)}</strong>
+            </div>
+          </div>
+        </section>
+      </aside>
     </div>
   );
 }
@@ -176,6 +246,64 @@ function parseJsonArray(value: string | null): string[] {
   }
 }
 
+function formatFileSize(size: number) {
+  if (size < 1024 * 1024) {
+    return `${(size / 1024).toFixed(1)} KB`;
+  }
+
+  return `${(size / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function buildChineseTitle(title: string | null) {
+  if (!title) {
+    return '论文智能导读';
+  }
+
+  return `${title.slice(0, 48)}${title.length > 48 ? '…' : ''}`;
+}
+
+function buildRemoteViewerUrl(sourcePlatform: string | null, sourceUrl: string | null) {
+  if (!sourceUrl) {
+    return null;
+  }
+
+  if (sourcePlatform === 'arxiv') {
+    const absUrl = sourceUrl.trim();
+    const match = absUrl.match(/arxiv\.org\/(abs|pdf)\/([^?#]+)/i);
+    const rawId = match?.[2]?.replace(/\.pdf$/i, '')?.trim();
+
+    if (!rawId) {
+      return absUrl.toLowerCase().endsWith('.pdf') ? absUrl : null;
+    }
+
+    const normalizedId = rawId.replace(/^arxiv:/i, '');
+    return `https://arxiv.org/pdf/${normalizedId}.pdf`;
+  }
+
+  return sourceUrl;
+}
+
+function buildRemoteOpenUrl(sourcePlatform: string | null, sourceUrl: string | null) {
+  if (!sourceUrl) {
+    return null;
+  }
+
+  if (sourcePlatform === 'arxiv') {
+    const absUrl = sourceUrl.trim();
+    const match = absUrl.match(/arxiv\.org\/(abs|pdf)\/([^?#]+)/i);
+    const rawId = match?.[2]?.replace(/\.pdf$/i, '')?.trim();
+
+    if (!rawId) {
+      return absUrl;
+    }
+
+    const normalizedId = rawId.replace(/^arxiv:/i, '');
+    return `https://arxiv.org/abs/${normalizedId}`;
+  }
+
+  return sourceUrl;
+}
+
 const primaryButton: React.CSSProperties = {
   padding: '13px 18px',
   borderRadius: '999px',
@@ -183,6 +311,7 @@ const primaryButton: React.CSSProperties = {
   background: 'var(--accent)',
   color: '#fff7f0',
   fontWeight: 700,
+  textAlign: 'center',
 };
 
 const secondaryButton: React.CSSProperties = {
@@ -190,4 +319,28 @@ const secondaryButton: React.CSSProperties = {
   background: 'transparent',
   color: 'var(--foreground)',
   border: '1px solid var(--border)',
+};
+
+const topbarLinkButton: React.CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: '10px 16px',
+  borderRadius: '999px',
+  border: '1px solid var(--border)',
+  color: 'var(--foreground)',
+  fontWeight: 600,
+  background: 'rgba(255,255,255,0.7)',
+};
+
+const sidebarGhostButton: React.CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: '8px 12px',
+  borderRadius: '999px',
+  border: '1px solid var(--border)',
+  color: 'var(--muted)',
+  fontSize: '13px',
+  fontWeight: 600,
 };

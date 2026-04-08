@@ -9,6 +9,7 @@ interface ImportPaperButtonProps {
     sourcePlatform: string;
     externalPaperId: string;
     sourceUrl: string;
+    pdfUrl?: string;
     title: string;
     abstract: string;
     authors: string[];
