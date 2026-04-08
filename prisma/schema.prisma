@@ -1,0 +1,345 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum PaperSourceType {
+  upload
+  url
+  search_import
+}
+
+enum PaperStatus {
+  draft
+  uploaded
+  fetching
+  parsing
+  analyzing
+  ready
+  failed
+  archived
+}
+
+enum AgentType {
+  agent1
+  agent2
+  agent3
+  agent4
+}
+
+enum AgentRunStatus {
+  pending
+  planning
+  streaming
+  awaiting_feedback
+  running
+  completed
+  failed
+  skipped
+}
+
+enum FigureType {
+  figure
+  table
+}
+
+model User {
+  id                String   @id @default(cuid())
+  email             String?  @unique
+  displayName       String?
+  role              String?
+  researchDirection String?
+  researchInterests String?
+  keywordsJson      String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  papers         Paper[]
+  modelConfigs   ModelConfig[]
+  githubConfig   GitHubConfig?
+  notes          Note[]
+  readingHistory ReadingHistory[]
+  agentFeedbacks AgentFeedback[]
+}
+
+model ModelConfig {
+  id              String   @id @default(cuid())
+  userId          String
+  provider        String
+  apiMode         String
+  model           String
+  baseUrl         String?
+  encryptedApiKey String
+  temperature     Float?
+  maxTokens       Int?
+  isDefault       Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  agentRuns AgentRun[]
+
+  @@index([userId])
+}
+
+model GitHubConfig {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  owner          String
+  repo           String
+  branch         String
+  basePath       String?
+  encryptedToken String
+  isEnabled      Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Paper {
+  id                 String          @id @default(cuid())
+  userId             String
+  sourceType         PaperSourceType
+  sourceUrl          String?
+  sourcePlatform     String?
+  externalPaperId    String?
+  importFingerprint  String?
+  originalFilePath   String?
+  title              String?
+  abstract           String?
+  keywordsJson       String?
+  authorsJson        String?
+  affiliationsJson   String?
+  venue              String?
+  year               Int?
+  quartile           String?
+  doi                String?
+  language           String?
+  status             PaperStatus     @default(draft)
+  parseStatus        String?
+  analysisStatus     String?
+  ragStatus          String?
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+  lastReadAt         DateTime?
+
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sections       PaperSection[]
+  chunks         PaperChunk[]
+  figures        PaperFigure[]
+  references     ReferenceItem[]
+  agentRuns      AgentRun[]
+  notes          Note[]
+  readingHistory ReadingHistory[]
+  literatureCard LiteratureCard?
+  agentFeedbacks AgentFeedback[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([sourcePlatform, externalPaperId])
+}
+
+model PaperSearchCache {
+  id         String   @id @default(cuid())
+  platform   String
+  query      String
+  resultJson String
+  fetchedAt  DateTime @default(now())
+  expiresAt  DateTime
+
+  @@index([platform, query])
+}
+
+model PaperSection {
+  id          String   @id @default(cuid())
+  paperId      String
+  sectionKey   String?
+  sectionType  String
+  title        String?
+  orderNo      Int
+  content      String
+  tokenCount   Int?
+  pageStart    Int?
+  pageEnd      Int?
+
+  paper   Paper        @relation(fields: [paperId], references: [id], onDelete: Cascade)
+  chunks  PaperChunk[]
+  notes   Note[]
+
+  @@index([paperId, orderNo])
+}
+
+model PaperChunk {
+  id              String   @id @default(cuid())
+  paperId         String
+  sectionId       String?
+  chunkKey        String?
+  chunkIndex      Int
+  content         String
+  tokenCount      Int?
+  embeddingStatus String?
+  metadataJson    String?
+
+  paper   Paper         @relation(fields: [paperId], references: [id], onDelete: Cascade)
+  section PaperSection? @relation(fields: [sectionId], references: [id], onDelete: SetNull)
+
+  @@index([paperId, chunkIndex])
+}
+
+model PaperFigure {
+  id            String   @id @default(cuid())
+  paperId       String
+  figureType    FigureType
+  label         String?
+  caption       String?
+  localPath     String?
+  thumbnailPath String?
+  publicUrl     String?
+  pageNo        Int?
+  orderNo       Int?
+  ocrText       String?
+  createdAt     DateTime @default(now())
+
+  paper Paper @relation(fields: [paperId], references: [id], onDelete: Cascade)
+
+  @@index([paperId, orderNo])
+}
+
+model ReferenceItem {
+  id          String   @id @default(cuid())
+  paperId     String
+  rawText     String
+  title       String?
+  authorsJson String?
+  venue       String?
+  year        Int?
+  doi         String?
+  url         String?
+  arxivId     String?
+  orderNo     Int?
+
+  paper Paper @relation(fields: [paperId], references: [id], onDelete: Cascade)
+
+  @@index([paperId, orderNo])
+}
+
+model AgentRun {
+  id                    String         @id @default(cuid())
+  paperId               String
+  agentType             AgentType
+  modelConfigId         String?
+  status                AgentRunStatus @default(pending)
+  goalText              String?
+  inputContextJson      String?
+  actionTraceJson       String?
+  streamSnapshotJson    String?
+  latestFeedback        String?
+  completionReason      String?
+  outputMarkdown        String?
+  summaryText           String?
+  errorMessage          String?
+  currentRerunIndex     Int            @default(0)
+  confirmedVersionIndex Int?
+  awaitingUserAction    Boolean        @default(false)
+  startedAt             DateTime?
+  finishedAt            DateTime?
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+
+  paper       Paper             @relation(fields: [paperId], references: [id], onDelete: Cascade)
+  modelConfig ModelConfig?      @relation(fields: [modelConfigId], references: [id], onDelete: SetNull)
+  feedbacks   AgentFeedback[]
+  versions    AgentRunVersion[]
+
+  @@unique([paperId, agentType])
+  @@index([status])
+}
+
+model AgentFeedback {
+  id           String   @id @default(cuid())
+  paperId      String
+  agentRunId   String
+  agentType    AgentType
+  userId       String
+  feedbackText String
+  feedbackScope String?
+  rerunIndex   Int
+  createdAt    DateTime @default(now())
+
+  paper    Paper    @relation(fields: [paperId], references: [id], onDelete: Cascade)
+  agentRun AgentRun @relation(fields: [agentRunId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([agentRunId, rerunIndex])
+}
+
+model AgentRunVersion {
+  id                 String   @id @default(cuid())
+  agentRunId         String
+  rerunIndex         Int
+  outputMarkdown     String?
+  summaryText        String?
+  actionTraceJson    String?
+  streamSnapshotJson String?
+  createdAt          DateTime @default(now())
+
+  agentRun AgentRun @relation(fields: [agentRunId], references: [id], onDelete: Cascade)
+
+  @@unique([agentRunId, rerunIndex])
+}
+
+model Note {
+  id              String   @id @default(cuid())
+  paperId         String
+  userId          String
+  sectionId       String?
+  sourceAgentType AgentType?
+  quoteText       String?
+  anchorJson      String?
+  content         String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  paper   Paper         @relation(fields: [paperId], references: [id], onDelete: Cascade)
+  user    User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  section PaperSection? @relation(fields: [sectionId], references: [id], onDelete: SetNull)
+
+  @@index([paperId, userId])
+}
+
+model ReadingHistory {
+  id         String   @id @default(cuid())
+  paperId    String
+  userId     String
+  sessionId  String?
+  actionType String
+  payloadJson String?
+  createdAt  DateTime @default(now())
+
+  paper Paper @relation(fields: [paperId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([paperId, userId])
+}
+
+model LiteratureCard {
+  id              String   @id @default(cuid())
+  paperId         String   @unique
+  title           String?
+  publicationInfo String?
+  researchProblem String?
+  coreMethod      String?
+  coreResult      String?
+  inspiration     String?
+  tag             String?
+  reason          String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  paper Paper @relation(fields: [paperId], references: [id], onDelete: Cascade)
+}

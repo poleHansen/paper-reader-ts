@@ -1,0 +1,70 @@
+:root {
+  --background: #f5f1e8;
+  --surface: rgba(255, 250, 241, 0.82);
+  --surface-strong: #fffaf1;
+  --border: rgba(95, 69, 44, 0.16);
+  --foreground: #23170f;
+  --muted: #6c5b4f;
+  --accent: #9f3d22;
+  --accent-soft: #ead4b6;
+  --success: #2b6a45;
+  --shadow: 0 18px 60px rgba(63, 40, 20, 0.12);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top left, rgba(230, 174, 96, 0.22), transparent 30%),
+    radial-gradient(circle at top right, rgba(159, 61, 34, 0.14), transparent 28%),
+    linear-gradient(180deg, #f4efe5 0%, #efe6d8 100%);
+  color: var(--foreground);
+  font-family: var(--font-sans), sans-serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+.page-stack {
+  display: grid;
+  gap: 24px;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(16px);
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
