@@ -7,12 +7,13 @@ interface NavigationItem {
 }
 
 interface AppShellProps {
-  brand: React.ReactNode;
+  brandLabel: string;
+  brandHref: Route;
   navigation: NavigationItem[];
   children: React.ReactNode;
 }
 
-export function AppShell({ brand, navigation, children }: AppShellProps) {
+export function AppShell({ brandLabel, brandHref, navigation, children }: AppShellProps) {
   return (
     <div style={{ padding: '24px' }}>
       <div
@@ -30,7 +31,9 @@ export function AppShell({ brand, navigation, children }: AppShellProps) {
           zIndex: 20,
         }}
       >
-        <div style={{ fontWeight: 700, fontSize: '20px' }}>{brand}</div>
+        <div style={{ fontWeight: 700, fontSize: '20px' }}>
+          <Link href={brandHref}>{brandLabel}</Link>
+        </div>
         <nav style={{ display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
           {navigation.map((item) => (
             <Link

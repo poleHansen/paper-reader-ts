@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import { DEFAULT_USER_ID } from '@/lib/constants/app';
 import { prisma } from '@/lib/db/prisma';
+import { buildPersistedPaperContent } from '@/lib/server/paper-processing';
 import { saveUploadedPdf } from '@/lib/server/paper-upload';
-import { buildUploadSections } from '@/lib/server/paper-sections';
 import { extractPdfText } from '@/lib/server/pdf-text';
 
 export async function POST(request: Request) {
@@ -46,6 +46,7 @@ export async function POST(request: Request) {
   try {
     const savedFile = await saveUploadedPdf(fileEntry);
     const extractedPdf = await extractPdfText(savedFile.absolutePath).catch(() => null);
+    const hasStructuredSections = Boolean(extractedPdf?.inferredSections.some((section) => section.sectionType !== 'references' && section.content.trim().length >= 120));
 
     await prisma.user.upsert({
       where: { id: DEFAULT_USER_ID },
@@ -68,7 +69,7 @@ export async function POST(request: Request) {
           year,
           originalFilePath: savedFile.relativePath,
           status: 'uploaded',
-          parseStatus: extractedPdf ? 'completed' : 'pending',
+          parseStatus: hasStructuredSections ? 'completed' : 'pending',
           analysisStatus: 'pending',
         },
         select: {
@@ -82,16 +83,42 @@ export async function POST(request: Request) {
         },
       });
 
-      const sectionsToCreate = buildUploadSections({
+      const persistedContent = buildPersistedPaperContent({
         paperId: createdPaper.id,
-        title,
-        abstract,
         extractedPdf,
       });
 
-      if (sectionsToCreate.length > 0) {
+      if (persistedContent.sections.length > 0) {
         await tx.paperSection.createMany({
-          data: sectionsToCreate,
+          data: persistedContent.sections,
+        });
+      }
+
+      if (persistedContent.figures.length > 0) {
+        await tx.paperFigure.createMany({
+          data: persistedContent.figures,
+        });
+      }
+
+      if (persistedContent.references.length > 0) {
+        await tx.referenceItem.createMany({
+          data: persistedContent.references,
+        });
+      }
+
+      if (persistedContent.chunks.length > 0 && persistedContent.sections.length > 0) {
+        const sectionRows = await tx.paperSection.findMany({
+          where: { paperId: createdPaper.id },
+          select: { id: true, sectionKey: true },
+        });
+
+        const sectionIdByKey = new Map(sectionRows.map((section) => [section.sectionKey, section.id]));
+
+        await tx.paperChunk.createMany({
+          data: persistedContent.chunks.map(({ sectionKey, ...chunk }) => ({
+            ...chunk,
+            sectionId: sectionIdByKey.get(sectionKey) ?? null,
+          })),
         });
       }
 

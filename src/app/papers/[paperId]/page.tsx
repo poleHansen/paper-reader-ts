@@ -21,9 +21,15 @@ export default async function PaperDetailPage({
   const remoteViewerUrl = buildRemoteViewerUrl(paper.sourcePlatform, paper.sourceUrl);
   const remoteOpenUrl = buildRemoteOpenUrl(paper.sourcePlatform, paper.sourceUrl);
   const pdfViewerUrl = localFile ? `/api/papers/${paper.id}/file` : remoteViewerUrl;
+  const structuredSections = paper.sections.filter(
+    (section) => section.sectionType !== 'pdf_text_preview' && section.sectionType !== 'full_text',
+  );
+  const trustworthyFigures = paper.figures.filter(
+    (figure) => Boolean(figure.caption) && (Boolean(figure.contextBefore) || Boolean(figure.contextAfter)),
+  );
   const metrics = [
-    { label: '章节', value: paper.sections.length },
-    { label: '图表', value: paper.figures.length },
+    { label: '章节', value: structuredSections.length },
+    { label: '图表', value: trustworthyFigures.length },
     { label: '参考文献', value: paper.references.length },
     { label: 'Agent 记录', value: paper.agentRuns.length },
   ];
@@ -50,8 +56,8 @@ export default async function PaperDetailPage({
         <div className="reader-sidebar__section">
           <div className="reader-sidebar__heading">核心概念速查</div>
           <div className="reader-chip-list">
-            {conceptChips.map((item) => (
-              <span key={item} className="reader-chip">
+            {conceptChips.map((item, index) => (
+              <span key={`${index}-${item}`} className="reader-chip">
                 {item}
               </span>
             ))}
@@ -89,7 +95,7 @@ export default async function PaperDetailPage({
 
         <div className="reader-sidebar__composer">
           <input value="问问这篇学术论文" readOnly aria-label="Ask the paper" />
-          <span>{paper.sections.length} 段解析</span>
+          <span>{structuredSections.length} 段解析</span>
         </div>
       </aside>
 
@@ -166,6 +172,86 @@ export default async function PaperDetailPage({
                 </section>
               )}
             </div>
+
+            <section className="reader-paper-section">
+              <h3>
+                解析章节
+                <span>{structuredSections.length}</span>
+              </h3>
+              {structuredSections.length > 0 ? (
+                <div style={{ display: 'grid', gap: '12px' }}>
+                  {structuredSections.map((section) => (
+                    <article key={section.id} style={contentCardStyle}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
+                        <strong>{section.title || 'Untitled section'}</strong>
+                        <span style={metaPillStyle}>
+                          {section.sectionType}
+                          {section.pageStart ? ` · p.${section.pageStart}${section.pageEnd && section.pageEnd !== section.pageStart ? `-${section.pageEnd}` : ''}` : ''}
+                        </span>
+                      </div>
+                      <p style={bodyTextStyle}>{section.content.slice(0, 1200)}{section.content.length > 1200 ? '…' : ''}</p>
+                    </article>
+                  ))}
+                </div>
+              ) : (
+                <p style={emptyTextStyle}>当前还没有抽取到高置信度的结构化章节。</p>
+              )}
+            </section>
+
+            <section className="reader-paper-section">
+              <h3>
+                图表提取
+                <span>{trustworthyFigures.length}</span>
+              </h3>
+              {trustworthyFigures.length > 0 ? (
+                <div style={{ display: 'grid', gap: '12px' }}>
+                  {trustworthyFigures.map((figure) => (
+                    <article key={figure.id} style={contentCardStyle}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
+                        <strong>{figure.label || (figure.figureType === 'table' ? 'Table' : 'Figure')}</strong>
+                        <span style={metaPillStyle}>
+                          {figure.figureType}
+                          {figure.pageNo ? ` · p.${figure.pageNo}` : ''}
+                        </span>
+                      </div>
+                      <p style={bodyTextStyle}>{figure.caption || 'No caption extracted.'}</p>
+                      {figure.contextBefore ? (
+                        <p style={supportingTextStyle}>
+                          <strong>前文：</strong>
+                          {figure.contextBefore}
+                        </p>
+                      ) : null}
+                      {figure.contextAfter ? (
+                        <p style={supportingTextStyle}>
+                          <strong>后文：</strong>
+                          {figure.contextAfter}
+                        </p>
+                      ) : null}
+                    </article>
+                  ))}
+                </div>
+              ) : (
+                <p style={emptyTextStyle}>当前还没有抽取到高置信度的图表及其上下文。</p>
+              )}
+            </section>
+
+            <section className="reader-paper-section">
+              <h3>
+                参考文献
+                <span>{paper.references.length}</span>
+              </h3>
+              {paper.references.length > 0 ? (
+                <ol style={{ margin: 0, paddingLeft: '20px', display: 'grid', gap: '10px' }}>
+                  {paper.references.map((reference) => (
+                    <li key={reference.id} style={{ color: 'var(--muted)', lineHeight: 1.7 }}>
+                      {reference.rawText}
+                    </li>
+                  ))}
+                </ol>
+              ) : (
+                <p style={emptyTextStyle}>还没有抽取到参考文献。</p>
+              )}
+            </section>
           </div>
         </article>
       </section>
@@ -343,4 +429,44 @@ const sidebarGhostButton: React.CSSProperties = {
   color: 'var(--muted)',
   fontSize: '13px',
   fontWeight: 600,
+};
+
+const contentCardStyle: React.CSSProperties = {
+  padding: '16px',
+  borderRadius: '18px',
+  border: '1px solid var(--border)',
+  background: 'rgba(255,255,255,0.72)',
+  display: 'grid',
+  gap: '10px',
+};
+
+const metaPillStyle: React.CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  padding: '6px 10px',
+  borderRadius: '999px',
+  background: 'rgba(196, 101, 52, 0.12)',
+  color: 'var(--accent)',
+  fontSize: '12px',
+  fontWeight: 700,
+};
+
+const bodyTextStyle: React.CSSProperties = {
+  margin: 0,
+  color: 'var(--muted)',
+  lineHeight: 1.75,
+  whiteSpace: 'pre-wrap',
+};
+
+const supportingTextStyle: React.CSSProperties = {
+  margin: 0,
+  color: 'var(--muted)',
+  lineHeight: 1.7,
+  fontSize: '0.92rem',
+};
+
+const emptyTextStyle: React.CSSProperties = {
+  margin: 0,
+  color: 'var(--muted)',
+  lineHeight: 1.7,
 };

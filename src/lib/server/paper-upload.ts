@@ -2,7 +2,6 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 
-const PAPER_STORAGE_DIR = path.join(process.cwd(), 'storage', 'papers');
 const MAX_PDF_FILE_SIZE = 25 * 1024 * 1024;
 
 export interface SavedUploadFile {

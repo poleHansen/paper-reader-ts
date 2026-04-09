@@ -1,6 +1,7 @@
 import { headers } from 'next/headers';
 import { ImportPaperButton } from '@/components/search/import-paper-button';
 import { UploadPaperForm } from '@/components/search/upload-paper-form';
+import { UrlImportForm } from '@/components/search/url-import-form';
 
 interface SearchPageProps {
   searchParams: Promise<{
@@ -84,7 +85,10 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
         </section>
       ) : null}
 
-      <UploadPaperForm />
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '16px' }}>
+        <UploadPaperForm />
+        <UrlImportForm />
+      </div>
 
       <section className="page-stack">
         {items.map((result) => (

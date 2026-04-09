@@ -7,6 +7,8 @@ import { buildPersistedPaperContent } from '@/lib/server/paper-processing';
 import { extractPdfText } from '@/lib/server/pdf-text';
 import { downloadRemotePdf } from '@/lib/server/paper-upload';
 
+export const runtime = 'nodejs';
+
 export async function GET() {
   try {
     const papers = await listPapers();
@@ -84,16 +86,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ item: existingPaper, duplicate: true });
     }
 
-    const shouldFetchArxivPdf = parsed.data.sourcePlatform === 'arxiv' && Boolean(parsed.data.pdfUrl);
-    const savedFile = shouldFetchArxivPdf ? await downloadRemotePdf(parsed.data.pdfUrl!, parsed.data.externalPaperId ?? parsed.data.title) : null;
+    const shouldFetchPdf = Boolean(parsed.data.pdfUrl);
+    const savedFile = shouldFetchPdf ? await downloadRemotePdf(parsed.data.pdfUrl!, parsed.data.externalPaperId ?? parsed.data.title) : null;
     const extractedPdf = savedFile ? await extractPdfText(savedFile.absolutePath).catch(() => null) : null;
+    const hasStructuredSections = Boolean(extractedPdf?.inferredSections.some((section) => section.sectionType !== 'references' && section.content.trim().length >= 120));
+    const normalizedSourcePlatform = parsed.data.sourcePlatform ?? inferSourcePlatform(parsed.data.sourceUrl, parsed.data.pdfUrl);
 
     const paper = await prisma.$transaction(async (tx) => {
       const createdPaper = await tx.paper.create({
         data: {
           userId: DEFAULT_USER_ID,
           sourceType: parsed.data.sourceType,
-          sourcePlatform: parsed.data.sourcePlatform,
+          sourcePlatform: normalizedSourcePlatform,
           externalPaperId: parsed.data.externalPaperId,
           sourceUrl: parsed.data.sourceUrl,
           title: parsed.data.title,
@@ -102,9 +106,9 @@ export async function POST(request: NextRequest) {
           year: parsed.data.year,
           originalFilePath: savedFile?.relativePath,
           status: 'uploaded',
-          parseStatus: extractedPdf ? 'completed' : 'pending',
+          parseStatus: hasStructuredSections ? 'completed' : 'pending',
           analysisStatus: 'pending',
-          ragStatus: extractedPdf ? 'ready' : 'pending',
+          ragStatus: hasStructuredSections ? 'ready' : 'pending',
         },
         select: {
           id: true,
@@ -119,8 +123,6 @@ export async function POST(request: NextRequest) {
 
       const persistedContent = buildPersistedPaperContent({
         paperId: createdPaper.id,
-        title: parsed.data.title,
-        abstract: parsed.data.abstract,
         extractedPdf,
       });
 
@@ -148,6 +150,18 @@ export async function POST(request: NextRequest) {
         });
       }
 
+      if (persistedContent.references.length > 0) {
+        await tx.referenceItem.createMany({
+          data: persistedContent.references,
+        });
+      }
+
+      if (persistedContent.figures.length > 0) {
+        await tx.paperFigure.createMany({
+          data: persistedContent.figures,
+        });
+      }
+
       return createdPaper;
     });
 
@@ -161,4 +175,18 @@ export async function POST(request: NextRequest) {
       { status: 500 },
     );
   }
+}
+
+function inferSourcePlatform(sourceUrl?: string, pdfUrl?: string) {
+  const candidate = `${sourceUrl ?? ''} ${pdfUrl ?? ''}`.toLowerCase();
+
+  if (candidate.includes('arxiv.org')) {
+    return 'arxiv';
+  }
+
+  if (candidate.includes('.pdf')) {
+    return 'pdf_url';
+  }
+
+  return 'url_import';
 }

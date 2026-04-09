@@ -1,7 +1,6 @@
 import './globals.css';
 import type { Metadata } from 'next';
 import { IBM_Plex_Sans, IBM_Plex_Serif } from 'next/font/google';
-import Link from 'next/link';
 import { AppShell } from '@/components/layout/app-shell';
 
 const sans = IBM_Plex_Sans({
@@ -26,7 +25,8 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="zh-CN">
       <body className={`${sans.variable} ${serif.variable}`}>
         <AppShell
-          brand={<Link href="/">Paper Reader TS</Link>}
+          brandLabel="Paper Reader TS"
+          brandHref="/"
           navigation={[
             { href: '/', label: 'Papers' },
             { href: '/search', label: 'Search & Upload' },

@@ -1,9 +1,11 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
-import { generateTextWithDefaultModel } from '@/lib/llm/generate';
 import { getLocalPaperFileInfo } from '@/lib/server/paper-file';
 import { buildPersistedPaperContent } from '@/lib/server/paper-processing';
 import { extractPdfText } from '@/lib/server/pdf-text';
+import { downloadRemotePdf } from '@/lib/server/paper-upload';
+
+export const runtime = 'nodejs';
 
 interface RouteContext {
   params: Promise<{ paperId: string }>;
@@ -11,6 +13,8 @@ interface RouteContext {
 
 export async function POST(_: Request, context: RouteContext) {
   const { paperId } = await context.params;
+  let failureStage = 'load-paper';
+  let extractionError: string | null = null;
 
   try {
     const paper = await prisma.paper.findUnique({
@@ -20,6 +24,9 @@ export async function POST(_: Request, context: RouteContext) {
         title: true,
         abstract: true,
         originalFilePath: true,
+        sourcePlatform: true,
+        sourceUrl: true,
+        externalPaperId: true,
       },
     });
 
@@ -32,42 +39,42 @@ export async function POST(_: Request, context: RouteContext) {
       );
     }
 
-    const abstract = paper.abstract?.trim() || 'No abstract available for this paper yet.';
-    const sectionTitle = paper.title ? `${paper.title} summary` : 'Imported paper summary';
-    const localFile = await getLocalPaperFileInfo(paper.originalFilePath);
-    const extractedPdf = localFile ? await extractPdfText(localFile.absolutePath) : null;
-    const promptSections = [
-      'Summarize the following paper context into three parts:',
-      '1. Core problem',
-      '2. Main approach',
-      '3. Key contribution',
-      '',
-      `Title: ${paper.title ?? 'Untitled paper'}`,
-      '',
-    ];
+    failureStage = 'resolve-local-file';
+    let localFile = await getLocalPaperFileInfo(paper.originalFilePath);
+
+    if (!localFile) {
+      const remotePdfUrl = buildRemotePdfUrl(paper.sourcePlatform, paper.sourceUrl, paper.externalPaperId);
+
+      if (remotePdfUrl) {
+        failureStage = 'download-remote-pdf';
+        const downloadedFile = await downloadRemotePdf(remotePdfUrl, paper.externalPaperId ?? paper.title ?? paper.id);
+
+        await prisma.paper.update({
+          where: { id: paperId },
+          data: {
+            originalFilePath: downloadedFile.relativePath,
+          },
+        });
+
+        localFile = downloadedFile;
+      }
+    }
+
+    failureStage = 'extract-pdf';
+    let extractedPdf = null;
 
     if (localFile) {
-      promptSections.push(`Local PDF path: ${localFile.relativePath}`);
-      promptSections.push(`Local PDF size: ${localFile.size} bytes`);
-      promptSections.push(`Estimated pages: ${extractedPdf?.pageCount ?? 0}`);
-      promptSections.push('');
+      try {
+        extractedPdf = await extractPdfText(localFile.absolutePath);
+      } catch (error) {
+        extractionError = error instanceof Error ? error.message : String(error);
+        console.warn('[parse-paper] PDF extraction failed', {
+          paperId,
+          filePath: localFile.relativePath,
+          error: extractionError,
+        });
+      }
     }
-
-    if (extractedPdf?.inferredSections.length) {
-      promptSections.push('Detected sections:');
-      extractedPdf.inferredSections.forEach((section) => {
-        promptSections.push(`## ${section.title}`);
-        promptSections.push(section.content.slice(0, 2500));
-        promptSections.push('');
-      });
-    } else if (extractedPdf?.previewText) {
-      promptSections.push('PDF extracted text preview:');
-      promptSections.push(extractedPdf.previewText);
-      promptSections.push('');
-    }
-
-    promptSections.push('Abstract:');
-    promptSections.push(abstract);
 
     await prisma.paper.update({
       where: { id: paperId },
@@ -77,50 +84,51 @@ export async function POST(_: Request, context: RouteContext) {
       },
     });
 
-    const generated = await generateTextWithDefaultModel({
-      system: 'You are a scientific paper reading assistant. Return concise academic markdown. If extracted PDF text is noisy, rely on the abstract and any readable fragments only.',
-      prompt: promptSections.join('\n'),
-    });
+    if (localFile && !extractedPdf) {
+      throw new Error(extractionError ?? 'PDF extraction returned no content.');
+    }
 
+    if (localFile && extractedPdf) {
+      const nonReferenceSections = extractedPdf.inferredSections.filter(
+        (section) => section.sectionType !== 'references' && section.content.trim().length >= 120,
+      );
+
+      if (nonReferenceSections.length < 2) {
+        throw new Error(
+          `Section segmentation produced only ${nonReferenceSections.length} non-reference section(s).`,
+        );
+      }
+    }
+
+    failureStage = 'persist-results';
     const updatedPaper = await prisma.$transaction(async (tx) => {
       await tx.paperChunk.deleteMany({
+        where: { paperId },
+      });
+
+      await tx.referenceItem.deleteMany({
+        where: { paperId },
+      });
+
+      await tx.paperFigure.deleteMany({
         where: { paperId },
       });
 
       await tx.paperSection.deleteMany({
         where: {
           paperId,
-          sectionType: {
-            not: 'abstract_summary',
-          },
-        },
-      });
-
-      await tx.paperSection.updateMany({
-        where: {
-          paperId,
-          sectionType: 'abstract_summary',
-        },
-        data: {
-          title: sectionTitle,
-          content: generated.text,
-          tokenCount: generated.text.split(/\s+/).filter(Boolean).length,
-          orderNo: 1,
         },
       });
 
       const persistedContent = buildPersistedPaperContent({
         paperId,
-        title: paper.title ?? 'Imported paper',
-        abstract: undefined,
         extractedPdf,
       });
 
       const refinedSections = persistedContent.sections
-        .filter((section) => section.sectionType !== 'abstract_summary')
         .map((section, index) => ({
           ...section,
-          orderNo: index + 2,
+          orderNo: index + 1,
         }));
 
       if (refinedSections.length > 0) {
@@ -141,11 +149,22 @@ export async function POST(_: Request, context: RouteContext) {
 
         await tx.paperChunk.createMany({
           data: persistedContent.chunks
-            .filter((chunk) => chunk.sectionKey !== 'abstract-summary')
             .map(({ sectionKey, ...chunk }) => ({
               ...chunk,
               sectionId: sectionIdByKey.get(sectionKey) ?? null,
             })),
+        });
+      }
+
+      if (persistedContent.references.length > 0) {
+        await tx.referenceItem.createMany({
+          data: persistedContent.references,
+        });
+      }
+
+      if (persistedContent.figures.length > 0) {
+        await tx.paperFigure.createMany({
+          data: persistedContent.figures,
         });
       }
 
@@ -166,10 +185,6 @@ export async function POST(_: Request, context: RouteContext) {
 
     return NextResponse.json({
       item: updatedPaper,
-      meta: {
-        provider: generated.provider,
-        model: generated.model,
-      },
     });
   } catch (error) {
     await prisma.paper.update({
@@ -183,9 +198,42 @@ export async function POST(_: Request, context: RouteContext) {
     return NextResponse.json(
       {
         error: 'Failed to parse paper.',
-        detail: error instanceof Error ? error.message : 'Unknown error',
+        detail: error instanceof Error ? `[${failureStage}] ${error.message}` : `[${failureStage}] Unknown error`,
       },
       { status: 500 },
     );
   }
+}
+
+function buildRemotePdfUrl(sourcePlatform?: string | null, sourceUrl?: string | null, externalPaperId?: string | null) {
+  const normalizedPlatform = sourcePlatform?.toLowerCase();
+
+  if (normalizedPlatform === 'arxiv') {
+    const arxivId = normalizeArxivId(externalPaperId) ?? normalizeArxivId(sourceUrl);
+
+    if (arxivId) {
+      return `https://arxiv.org/pdf/${arxivId}.pdf`;
+    }
+  }
+
+  if (sourceUrl?.toLowerCase().endsWith('.pdf')) {
+    return sourceUrl;
+  }
+
+  return null;
+}
+
+function normalizeArxivId(value?: string | null) {
+  if (!value) {
+    return null;
+  }
+
+  const trimmed = value.trim();
+
+  if (!trimmed) {
+    return null;
+  }
+
+  const matched = trimmed.match(/(?:arxiv\.org\/(?:abs|pdf)\/)?([^/?#]+?)(?:\.pdf)?$/i);
+  return matched?.[1] ?? trimmed;
 }

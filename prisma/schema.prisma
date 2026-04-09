@@ -197,6 +197,8 @@ model PaperFigure {
   figureType    FigureType
   label         String?
   caption       String?
+  contextBefore String?
+  contextAfter  String?
   localPath     String?
   thumbnailPath String?
   publicUrl     String?
