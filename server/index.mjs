@@ -155,6 +155,180 @@ let tasks = [buildEnvironmentTask(readSettings()), ...defaultTasks]
 let activeDocumentDir = dataDir
 const taskClients = new Set()
 
+const getDocumentBaseName = (artifactDir) => {
+  const contentListPath = getDocumentContentListPath(artifactDir)
+  if (contentListPath) {
+    return path.basename(contentListPath).replace(/_(content_list_v2|content_list)\.json$/i, '')
+  }
+
+  return path.basename(artifactDir).replace(/_(content_list_v2|content_list)$/i, '')
+}
+
+const getDocumentContentListPath = (artifactDir) => {
+  if (!artifactDir || !fs.existsSync(artifactDir)) {
+    return ''
+  }
+
+  const files = fs.readdirSync(artifactDir, { withFileTypes: true })
+    .filter((entry) => entry.isFile())
+    .map((entry) => entry.name)
+
+  const preferredName = files.find((name) => /_content_list_v2\.json$/i.test(name))
+  if (preferredName) {
+    return path.join(artifactDir, preferredName)
+  }
+
+  const fallbackName = files.find((name) => /_content_list\.json$/i.test(name))
+  if (fallbackName) {
+    return path.join(artifactDir, fallbackName)
+  }
+
+  return ''
+}
+
+const getDocumentMarkdownPath = (artifactDir) => {
+  if (!artifactDir || !fs.existsSync(artifactDir)) {
+    return ''
+  }
+
+  const files = fs.readdirSync(artifactDir, { withFileTypes: true })
+    .filter((entry) => entry.isFile())
+    .map((entry) => entry.name)
+
+  const markdownName = files.find((name) => /\.md$/i.test(name))
+  return markdownName ? path.join(artifactDir, markdownName) : ''
+}
+
+const listAvailableArtifactDirs = () => {
+  const settings = readSettings()
+  const artifactDirs = []
+
+  if (getDocumentContentListPath(dataDir)) {
+    artifactDirs.push({ artifactDir: dataDir, source: 'bundled' })
+  }
+
+  if (settings.outputRoot && fs.existsSync(settings.outputRoot)) {
+    const runDirs = fs.readdirSync(settings.outputRoot, { withFileTypes: true })
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => path.join(settings.outputRoot, entry.name))
+
+    for (const runDir of runDirs) {
+      let nestedDirs = []
+      try {
+        nestedDirs = fs.readdirSync(runDir, { withFileTypes: true })
+          .filter((entry) => entry.isDirectory())
+          .map((entry) => path.join(runDir, entry.name, 'auto'))
+          .filter((artifactDir) => fs.existsSync(artifactDir) && getDocumentContentListPath(artifactDir))
+      } catch {
+        nestedDirs = []
+      }
+
+      for (const artifactDir of nestedDirs) {
+        artifactDirs.push({ artifactDir, source: 'workspace-run' })
+      }
+    }
+  }
+
+  return artifactDirs
+}
+
+const resolveActiveDocumentDir = () => {
+  if (getDocumentContentListPath(activeDocumentDir)) {
+    return activeDocumentDir
+  }
+
+  const available = listAvailableArtifactDirs()
+    .map(({ artifactDir, source }) => {
+      const contentListPath = getDocumentContentListPath(artifactDir)
+      const stats = fs.statSync(contentListPath)
+      return { artifactDir, source, updatedAt: stats.mtime.getTime() }
+    })
+    .sort((left, right) => right.updatedAt - left.updatedAt)
+
+  const fallback = available[0]?.artifactDir || dataDir
+  activeDocumentDir = fallback
+  return activeDocumentDir
+}
+
+const listKnowledgeDocuments = () => {
+  const directories = new Map()
+
+  for (const item of listAvailableArtifactDirs()) {
+    directories.set(item.artifactDir, item)
+  }
+
+  const readyDocuments = [...directories.values()]
+    .map(({ artifactDir, source }) => {
+      const contentListPath = getDocumentContentListPath(artifactDir)
+      const stats = fs.statSync(contentListPath)
+      return {
+        id: path.relative(rootDir, artifactDir).split(path.sep).join('/'),
+        paperTitle: getDocumentBaseName(artifactDir),
+        artifactDir,
+        assetBasePath: `/${path.relative(rootDir, artifactDir).split(path.sep).join('/')}`,
+        updatedAt: stats.mtime.toISOString(),
+        source,
+        isActive: path.resolve(artifactDir) === path.resolve(activeDocumentDir),
+        status: 'ready',
+      }
+    })
+
+  const readyByOutputDir = new Map(
+    readyDocuments
+      .filter((item) => item.source === 'workspace-run')
+      .map((item) => [path.resolve(path.dirname(path.dirname(item.artifactDir))), item]),
+  )
+
+  const taskDocuments = tasks
+    .filter((task) => task.kind !== 'chat' && task.outputDir)
+    .map((task) => {
+      const resolvedOutputDir = path.resolve(task.outputDir)
+      const readyMatch = readyByOutputDir.get(resolvedOutputDir)
+      if (readyMatch) {
+        return {
+          ...readyMatch,
+          taskId: task.id,
+          detail: task.detail,
+          inputPath: task.inputPath,
+          updatedAt: new Date().toISOString(),
+        }
+      }
+
+      const paperTitle = task.paperId
+        ? task.paperId.replace(/-\d+$/, '').replace(/[-_]+/g, ' ').trim() || task.paperId
+        : path.parse(task.inputPath || task.title).name || task.title
+
+      const status = task.status === 'failed' ? 'failed' : 'processing'
+
+      return {
+        id: task.id,
+        paperTitle,
+        artifactDir: task.outputDir,
+        assetBasePath: '',
+        updatedAt: new Date().toISOString(),
+        source: 'workspace-run',
+        isActive: false,
+        status,
+        taskId: task.id,
+        detail: task.detail,
+        inputPath: task.inputPath,
+      }
+    })
+
+  const merged = new Map()
+
+  for (const item of readyDocuments) {
+    merged.set(item.id, item)
+  }
+
+  for (const item of taskDocuments) {
+    merged.set(item.id, item)
+  }
+
+  return [...merged.values()]
+    .sort((left, right) => new Date(right.updatedAt).getTime() - new Date(left.updatedAt).getTime())
+}
+
 const slugifyPaperId = (value) =>
   value
     .normalize('NFKC')
@@ -378,8 +552,8 @@ const textFromLines = (lines) => {
     .trim()
 }
 
-const readPageMetas = (baseName) => {
-  const modelJsonPath = path.join(activeDocumentDir, `${baseName}_model.json`)
+const readPageMetas = (documentDir, baseName) => {
+  const modelJsonPath = path.join(documentDir, `${baseName}_model.json`)
   if (!fs.existsSync(modelJsonPath)) {
     return []
   }
@@ -397,15 +571,18 @@ const readPageMetas = (baseName) => {
 }
 
 const buildDocument = () => {
-  const baseName = path.basename(activeDocumentDir).replace(/_(content_list_v2|content_list)$/i, '')
-  const preferredPath = path.join(activeDocumentDir, `${baseName}_content_list_v2.json`)
-  const fallbackPath = path.join(activeDocumentDir, `${baseName}_content_list.json`)
-  const contentListPath = fs.existsSync(preferredPath) ? preferredPath : fallbackPath
-  const middleJsonPath = path.join(activeDocumentDir, `${baseName}_middle.json`)
+  const resolvedDocumentDir = resolveActiveDocumentDir()
+  const baseName = getDocumentBaseName(resolvedDocumentDir)
+  const contentListPath = getDocumentContentListPath(resolvedDocumentDir)
+  const markdownPath = getDocumentMarkdownPath(resolvedDocumentDir)
+  const middleJsonPath = path.join(resolvedDocumentDir, `${baseName}_middle.json`)
   const pages = readJson(contentListPath)
-  const pageMetas = readPageMetas(baseName)
-  const assetBasePath = `/${path.relative(rootDir, activeDocumentDir).split(path.sep).join('/')}`
+  const pageMetas = readPageMetas(resolvedDocumentDir, baseName)
+  const assetBasePath = `/${path.relative(rootDir, resolvedDocumentDir).split(path.sep).join('/')}`
   const middleJson = fs.existsSync(middleJsonPath) ? readJson(middleJsonPath) : { pdf_info: [] }
+  const markdown = markdownPath && fs.existsSync(markdownPath)
+    ? fs.readFileSync(markdownPath, 'utf-8')
+    : ''
 
   const outline = pages.flatMap((page, pageIndex) =>
     page
@@ -442,7 +619,7 @@ const buildDocument = () => {
       .filter((anchor) => anchor.text),
   )
 
-  return { pages, outline, figures, anchors, pageMetas, assetBasePath, paperTitle: baseName }
+  return { pages, outline, figures, anchors, pageMetas, assetBasePath, paperTitle: baseName, markdown }
 }
 
 const buildChatContext = ({ question, page, anchorId }) => {
@@ -576,6 +753,28 @@ app.get('/api/document', (_req, res) => {
   res.json(buildDocument())
 })
 
+app.get('/api/library', (_req, res) => {
+  res.json(listKnowledgeDocuments())
+})
+
+app.post('/api/library/select', (req, res) => {
+  const artifactDir = typeof req.body?.artifactDir === 'string' ? req.body.artifactDir.trim() : ''
+
+  if (!artifactDir || !fs.existsSync(artifactDir)) {
+    res.status(400).json({ error: 'artifactDir is required and must exist' })
+    return
+  }
+
+  const contentListPath = getDocumentContentListPath(artifactDir)
+  if (!contentListPath) {
+    res.status(400).json({ error: 'artifactDir does not contain a readable document' })
+    return
+  }
+
+  activeDocumentDir = artifactDir
+  res.json({ ok: true, document: buildDocument(), library: listKnowledgeDocuments() })
+})
+
 app.get('/api/tasks', (_req, res) => {
   res.json(tasks)
 })
@@ -602,6 +801,26 @@ app.post('/api/import', (req, res) => {
     return
   }
   startImportTask(filePath, res)
+})
+
+app.post('/api/import/retry', (req, res) => {
+  const filePath = typeof req.body?.filePath === 'string' ? req.body.filePath.trim() : ''
+  if (!filePath) {
+    res.status(400).json({ error: 'filePath is required' })
+    return
+  }
+
+  const taskResponse = {
+    json(payload) {
+      res.json({ task: payload })
+    },
+    status(code) {
+      res.status(code)
+      return this
+    },
+  }
+
+  startImportTask(filePath, taskResponse)
 })
 
 app.post('/api/import-upload', upload.single('paper'), (req, res) => {

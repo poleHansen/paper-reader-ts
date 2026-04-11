@@ -71,6 +71,21 @@ export type DocumentPayload = {
   pageMetas: PageMeta[]
   assetBasePath: string
   paperTitle: string
+  markdown: string
+}
+
+export type LibraryDocument = {
+  id: string
+  paperTitle: string
+  artifactDir: string
+  assetBasePath: string
+  updatedAt: string
+  source: 'bundled' | 'workspace-run'
+  isActive: boolean
+  status: 'ready' | 'processing' | 'failed'
+  taskId?: string
+  detail?: string
+  inputPath?: string
 }
 
 export type OutlineItem = {
@@ -114,6 +129,16 @@ export type CondaEnvironmentsResponse = {
 export type UploadImportResponse = {
   filePath: string
   task: ParseTask
+}
+
+export type RetryImportResponse = {
+  task: ParseTask
+}
+
+export type SelectLibraryResponse = {
+  ok: boolean
+  document: DocumentPayload
+  library: LibraryDocument[]
 }
 
 export type ChatResponse = {

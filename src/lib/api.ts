@@ -1,4 +1,14 @@
-import type { ChatResponse, CondaEnvironmentsResponse, DocumentPayload, ParseTask, SettingsState, UploadImportResponse } from '../types'
+import type {
+  ChatResponse,
+  CondaEnvironmentsResponse,
+  DocumentPayload,
+  LibraryDocument,
+  ParseTask,
+  RetryImportResponse,
+  SelectLibraryResponse,
+  SettingsState,
+  UploadImportResponse,
+} from '../types'
 
 const request = async <T>(input: string, init?: RequestInit): Promise<T> => {
   const response = await fetch(input, {
@@ -17,6 +27,17 @@ const request = async <T>(input: string, init?: RequestInit): Promise<T> => {
 
 export const fetchPaperDocument = async (): Promise<DocumentPayload> => {
   return request<DocumentPayload>('/api/document')
+}
+
+export const fetchLibraryDocuments = async (): Promise<LibraryDocument[]> => {
+  return request<LibraryDocument[]>('/api/library')
+}
+
+export const selectLibraryDocument = async (artifactDir: string): Promise<SelectLibraryResponse> => {
+  return request<SelectLibraryResponse>('/api/library/select', {
+    method: 'POST',
+    body: JSON.stringify({ artifactDir }),
+  })
 }
 
 export const fetchTaskFeed = async (): Promise<ParseTask[]> => {
@@ -61,6 +82,13 @@ export const createImportTask = async (filePath: string): Promise<ParseTask> => 
   })
 }
 
+export const retryImportTask = async (filePath: string): Promise<RetryImportResponse> => {
+  return request<RetryImportResponse>('/api/import/retry', {
+    method: 'POST',
+    body: JSON.stringify({ filePath }),
+  })
+}
+
 export const uploadAndImportPdf = async (file: File): Promise<UploadImportResponse> => {
   const formData = new FormData()
   formData.append('paper', file)
@@ -87,7 +115,7 @@ export const createGithubSyncTask = async (imageDir: string): Promise<ParseTask>
 export const askPaperQuestion = async (payload: {
   question: string
   page: number
-  anchorId: string
+  anchorId?: string
 }): Promise<ChatResponse> => {
   return request<ChatResponse>('/api/chat', {
     method: 'POST',
