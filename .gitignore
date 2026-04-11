@@ -25,3 +25,18 @@ tmp/
 temp/
 
 工业缺陷零样本分割2026/
+
+# optional: ignore bulky MinerU docs/tests/demo if you only keep runtime subset
+pdf_cut/MinerU/demo/
+pdf_cut/MinerU/docker/
+pdf_cut/MinerU/docs/
+pdf_cut/MinerU/tests/
+pdf_cut/MinerU/projects/
+pdf_cut/MinerU/mineru.egg-info/
+pdf_cut/MinerU/README.md
+pdf_cut/MinerU/README_zh-CN.md
+pdf_cut/MinerU/LICENSE.md
+pdf_cut/MinerU/MinerU_CLA.md
+pdf_cut/MinerU/SECURITY.md
+pdf_cut/MinerU/mkdocs.yml
+pdf_cut/MinerU/update_version.py
