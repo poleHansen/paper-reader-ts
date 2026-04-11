@@ -112,6 +112,14 @@ export type SettingsState = {
   executionMode: 'api-first' | 'cli-first'
   mineruModelSource: 'huggingface' | 'modelscope' | 'local'
   mineruConfigPath: string
+  ragEnabled: boolean
+  ragAutoBuild: boolean
+  ragModelName: string
+  ragModelPath: string
+  ragTopK: number
+  ragChunkSize: number
+  ragChunkOverlap: number
+  ragBatchSize: number
 }
 
 export type CondaEnvironmentItem = {
@@ -145,4 +153,37 @@ export type ChatResponse = {
   answer: string
   paperTitle: string
   citations: string[]
+  mode: 'page' | 'rag'
+  retrievedChunks?: RagChunkItem[]
+}
+
+export type RagChunkItem = {
+  id: string
+  text: string
+  page: number
+  pageStart?: number
+  pageEnd?: number
+  pages?: number[]
+  sectionPath?: string
+  bbox?: number[]
+  blockTypes?: string[]
+  score?: number
+}
+
+export type RagIndexStatus = {
+  artifactDir: string
+  ragDir: string
+  indexed: boolean
+  chunkCount: number
+  builtAt: string
+  model: string
+  missingFiles: string[]
+}
+
+export type RagRetrieveResponse = {
+  ok: boolean
+  artifactDir: string
+  ragDir: string
+  chunks: RagChunkItem[]
+  model: string
 }

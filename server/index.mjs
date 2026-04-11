@@ -17,6 +17,8 @@ const uploadsDir = path.join(rootDir, 'workspace', 'imports')
 const runsDir = path.join(rootDir, 'workspace', 'runs')
 const workerPath = path.join(rootDir, 'server', 'mineru_worker.py')
 const githubSyncPath = path.join(rootDir, 'server', 'github_sync.py')
+const ragBuilderPath = path.join(rootDir, 'server', 'rag_builder.py')
+const ragQueryPath = path.join(rootDir, 'server', 'rag_query.py')
 
 const app = express()
 const upload = multer({ dest: uploadsDir })
@@ -40,6 +42,14 @@ const defaultSettings = {
   executionMode: 'api-first',
   mineruModelSource: 'local',
   mineruConfigPath: path.join(rootDir, 'pdf_cut', 'MinerU', 'mineru.json'),
+  ragEnabled: true,
+  ragAutoBuild: true,
+  ragModelName: 'BAAI/bge-m3',
+  ragModelPath: '',
+  ragTopK: 8,
+  ragChunkSize: 1200,
+  ragChunkOverlap: 150,
+  ragBatchSize: 4,
 }
 
 const defaultTasks = [
@@ -198,6 +208,180 @@ const getDocumentMarkdownPath = (artifactDir) => {
   const markdownName = files.find((name) => /\.md$/i.test(name))
   return markdownName ? path.join(artifactDir, markdownName) : ''
 }
+
+const getRagDir = (artifactDir) => path.join(artifactDir, 'rag')
+
+const getRagFiles = (artifactDir) => ({
+  ragDir: getRagDir(artifactDir),
+  chunksPath: path.join(getRagDir(artifactDir), 'chunks.jsonl'),
+  metadataPath: path.join(getRagDir(artifactDir), 'metadata.json'),
+  buildInfoPath: path.join(getRagDir(artifactDir), 'build_info.json'),
+  indexPath: path.join(getRagDir(artifactDir), 'index.faiss'),
+})
+
+const getRagStatus = (artifactDir) => {
+  const ragFiles = getRagFiles(artifactDir)
+  const missingFiles = Object.entries(ragFiles)
+    .filter(([key, filePath]) => key !== 'ragDir' && !fs.existsSync(filePath))
+    .map(([key]) => key)
+
+  const buildInfo = fs.existsSync(ragFiles.buildInfoPath) ? readJson(ragFiles.buildInfoPath) : {}
+  const metadata = fs.existsSync(ragFiles.metadataPath) ? readJson(ragFiles.metadataPath) : {}
+
+  return {
+    artifactDir,
+    ragDir: ragFiles.ragDir,
+    indexed: missingFiles.length === 0,
+    chunkCount: Number(metadata.chunkCount || buildInfo.chunkCount) || 0,
+    builtAt: buildInfo.builtAt || (fs.existsSync(ragFiles.buildInfoPath) ? fs.statSync(ragFiles.buildInfoPath).mtime.toISOString() : ''),
+    model: buildInfo.modelName || '',
+    missingFiles,
+  }
+}
+
+const runPythonTask = ({ settings, scriptPath, scriptArgs, onStdout, onStderr }) => {
+  const env = {
+    ...process.env,
+    PYTHONIOENCODING: 'utf-8',
+  }
+
+  if (settings.pythonExePath) {
+    return spawn(settings.pythonExePath, [scriptPath, ...scriptArgs], { cwd: rootDir, env })
+  }
+
+  if (settings.condaExePath && settings.condaEnv) {
+    return spawn(settings.condaExePath, ['run', '-n', settings.condaEnv, 'python', scriptPath, ...scriptArgs], {
+      cwd: rootDir,
+      env,
+    })
+  }
+
+  return spawn('python', [scriptPath, ...scriptArgs], { cwd: rootDir, env })
+}
+
+const buildRagIndex = (artifactDir, { taskId, settings }) => new Promise((resolve, reject) => {
+  const scriptArgs = [
+    '--artifact-dir',
+    artifactDir,
+    '--model-name',
+    settings.ragModelName,
+    '--model-path',
+    settings.ragModelPath || '',
+    '--device',
+    settings.deviceMode || 'cuda',
+    '--chunk-size',
+    String(settings.ragChunkSize || 1200),
+    '--chunk-overlap',
+    String(settings.ragChunkOverlap || 150),
+    '--batch-size',
+    String(settings.ragBatchSize || 4),
+  ]
+
+  const child = runPythonTask({ settings, scriptPath: ragBuilderPath, scriptArgs })
+  let stdout = ''
+  let stderr = ''
+
+  child.stdout.on('data', (chunk) => {
+    const text = chunk.toString('utf-8')
+    stdout += text
+    for (const line of text.split(/\r?\n/)) {
+      if (!line.trim()) {
+        continue
+      }
+      if (line.startsWith('TASK_STATUS|')) {
+        const [, status, detail] = line.split('|')
+        if (taskId) {
+          appendTaskLog(taskId, detail || line, { status: status || 'parsing' })
+        }
+        continue
+      }
+      if (taskId) {
+        appendTaskLog(taskId, line, { status: 'parsing' })
+      }
+    }
+  })
+
+  child.stderr.on('data', (chunk) => {
+    const text = chunk.toString('utf-8')
+    stderr += text
+    if (taskId) {
+      for (const line of text.split(/\r?\n/)) {
+        appendTaskLog(taskId, line, { status: 'parsing' })
+      }
+    }
+  })
+
+  child.on('error', (error) => reject(error))
+  child.on('close', (code) => {
+    if (code !== 0) {
+      reject(new Error(stderr.trim() || `rag builder failed with exit code ${code ?? 'unknown'}`))
+      return
+    }
+
+    const lastJsonLine = stdout
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter((line) => line.startsWith('{') && line.endsWith('}'))
+      .at(-1)
+
+    if (!lastJsonLine) {
+      resolve({ ok: true, ...getRagStatus(artifactDir) })
+      return
+    }
+
+    resolve(JSON.parse(lastJsonLine))
+  })
+})
+
+const retrieveRagChunks = (artifactDir, { question, topK, settings }) => new Promise((resolve, reject) => {
+  const scriptArgs = [
+    '--artifact-dir',
+    artifactDir,
+    '--question',
+    question,
+    '--top-k',
+    String(topK || settings.ragTopK || 8),
+    '--model-name',
+    settings.ragModelName,
+    '--model-path',
+    settings.ragModelPath || '',
+    '--device',
+    settings.deviceMode || 'cuda',
+  ]
+
+  const child = runPythonTask({ settings, scriptPath: ragQueryPath, scriptArgs })
+  let stdout = ''
+  let stderr = ''
+
+  child.stdout.on('data', (chunk) => {
+    stdout += chunk.toString('utf-8')
+  })
+
+  child.stderr.on('data', (chunk) => {
+    stderr += chunk.toString('utf-8')
+  })
+
+  child.on('error', (error) => reject(error))
+  child.on('close', (code) => {
+    if (code !== 0) {
+      reject(new Error(stderr.trim() || `rag query failed with exit code ${code ?? 'unknown'}`))
+      return
+    }
+
+    const lastJsonLine = stdout
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter((line) => line.startsWith('{') && line.endsWith('}'))
+      .at(-1)
+
+    if (!lastJsonLine) {
+      reject(new Error('rag query did not return JSON payload'))
+      return
+    }
+
+    resolve(JSON.parse(lastJsonLine))
+  })
+})
 
 const listAvailableArtifactDirs = () => {
   const settings = readSettings()
@@ -483,19 +667,50 @@ const startImportTask = (filePath, res) => {
 
   worker.on('close', (code) => {
     if (code === 0) {
+      const currentTask = getLatestTask(task.id)
+      const artifactDir = currentTask?.outputDir ? path.join(currentTask.outputDir, paperStem, 'auto') : ''
+
       updateTask(task.id, (current) => ({
         ...current,
         status: 'ready',
-        detail: '解析完成，已加载最新产物。',
+        detail: settings.ragEnabled && settings.ragAutoBuild && artifactDir ? '解析完成，正在构建 RAG 索引。' : '解析完成，已加载最新产物。',
         timestamp: nowTime(),
         logs: [...(current.logs ?? []), '解析进程结束，状态码 0。'],
       }))
 
-      const currentTask = getLatestTask(task.id)
-      const imageDir = currentTask?.outputDir ? path.join(currentTask.outputDir, paperStem, 'auto', 'images') : ''
-      if (imageDir && fs.existsSync(imageDir)) {
-        syncImagesToGithub(task.id, imageDir, settings)
+      const finalizeAfterRag = () => {
+        const imageDir = currentTask?.outputDir ? path.join(currentTask.outputDir, paperStem, 'auto', 'images') : ''
+        if (imageDir && fs.existsSync(imageDir)) {
+          syncImagesToGithub(task.id, imageDir, settings)
+        }
       }
+
+      if (settings.ragEnabled && settings.ragAutoBuild && artifactDir && fs.existsSync(artifactDir)) {
+        buildRagIndex(artifactDir, { taskId: task.id, settings })
+          .then((result) => {
+            updateTask(task.id, (current) => ({
+              ...current,
+              status: 'ready',
+              detail: `解析完成，RAG 索引已生成，共 ${result.chunkCount || getRagStatus(artifactDir).chunkCount} 个片段。`,
+              timestamp: nowTime(),
+              logs: [...(current.logs ?? []), `RAG 索引构建完成: ${getRagDir(artifactDir)}`],
+            }))
+            finalizeAfterRag()
+          })
+          .catch((error) => {
+            updateTask(task.id, (current) => ({
+              ...current,
+              status: 'failed',
+              detail: `解析完成，但 RAG 索引构建失败: ${error.message}`,
+              timestamp: nowTime(),
+              error: `rag-build:${error.message}`,
+              logs: [...(current.logs ?? []), `RAG 索引构建失败: ${error.message}`],
+            }))
+          })
+        return
+      }
+
+      finalizeAfterRag()
       return
     }
 
@@ -570,8 +785,10 @@ const readPageMetas = (documentDir, baseName) => {
   }))
 }
 
-const buildDocument = () => {
-  const resolvedDocumentDir = resolveActiveDocumentDir()
+const buildDocument = (artifactDir) => {
+  const resolvedDocumentDir = artifactDir && fs.existsSync(artifactDir)
+    ? artifactDir
+    : resolveActiveDocumentDir()
   const baseName = getDocumentBaseName(resolvedDocumentDir)
   const contentListPath = getDocumentContentListPath(resolvedDocumentDir)
   const markdownPath = getDocumentMarkdownPath(resolvedDocumentDir)
@@ -622,8 +839,8 @@ const buildDocument = () => {
   return { pages, outline, figures, anchors, pageMetas, assetBasePath, paperTitle: baseName, markdown }
 }
 
-const buildChatContext = ({ question, page, anchorId }) => {
-  const document = buildDocument()
+const buildChatContext = ({ question, page, anchorId, artifactDir }) => {
+  const document = buildDocument(artifactDir)
   const pageBlocks = document.pages[page - 1] ?? []
   const pageText = pageBlocks
     .map((block) => {
@@ -669,13 +886,77 @@ const buildChatContext = ({ question, page, anchorId }) => {
   }
 }
 
-const requestChatCompletion = async ({ question, page, anchorId }) => {
+const buildRagPrompt = ({ paperTitle, question, chunks }) => {
+  const citations = chunks.map((chunk) => {
+    const sectionPart = chunk.sectionPath ? ` ${chunk.sectionPath}` : ''
+    return `P.${chunk.page}${sectionPart}`
+  })
+
+  const context = chunks
+    .map((chunk, index) => {
+      const sectionText = chunk.sectionPath ? `章节: ${chunk.sectionPath}` : '章节: 未知'
+      return [
+        `片段 ${index + 1}`,
+        `页码: ${chunk.page}`,
+        sectionText,
+        `相关度: ${typeof chunk.score === 'number' ? chunk.score.toFixed(4) : 'n/a'}`,
+        chunk.text,
+      ].join('\n')
+    })
+    .join('\n\n')
+
+  return {
+    paperTitle,
+    citations,
+    prompt: [
+      `论文标题: ${paperTitle}`,
+      `用户问题: ${question}`,
+      '以下内容为从当前论文检索得到的证据片段。你必须只基于这些证据回答；若证据不足，直接说明。',
+      context,
+    ].join('\n\n'),
+  }
+}
+
+const requestChatCompletion = async ({ question, page, anchorId, artifactDir, useRag, topK }) => {
   const settings = readSettings()
   if (!settings.apiKey) {
     throw new Error('apiKey is not configured')
   }
 
-  const { prompt, paperTitle, citations } = buildChatContext({ question, page, anchorId })
+  const targetArtifactDir = artifactDir && fs.existsSync(artifactDir) ? artifactDir : resolveActiveDocumentDir()
+  const document = buildDocument(targetArtifactDir)
+  let mode = 'page'
+  let retrievedChunks = []
+  let promptPayload
+
+  if (useRag) {
+    const ragStatus = getRagStatus(targetArtifactDir)
+    if (!ragStatus.indexed) {
+      throw new Error(`RAG index is not ready for ${targetArtifactDir}`)
+    }
+
+    const retrieval = await retrieveRagChunks(targetArtifactDir, {
+      question,
+      topK,
+      settings,
+    })
+
+    retrievedChunks = Array.isArray(retrieval.chunks) ? retrieval.chunks : []
+    if (!retrievedChunks.length) {
+      throw new Error('RAG retrieval returned no chunks')
+    }
+
+    promptPayload = buildRagPrompt({
+      paperTitle: document.paperTitle,
+      question,
+      chunks: retrievedChunks,
+    })
+    mode = 'rag'
+  } else {
+    promptPayload = buildChatContext({ question, page, anchorId, artifactDir: targetArtifactDir })
+  }
+
+  const { prompt, paperTitle, citations } = promptPayload
   const endpoint = `${String(settings.apiBaseUrl || 'https://api.openai.com/v1').replace(/\/$/, '')}/chat/completions`
   const response = await fetch(endpoint, {
     method: 'POST',
@@ -689,7 +970,9 @@ const requestChatCompletion = async ({ question, page, anchorId }) => {
       messages: [
         {
           role: 'system',
-          content: '你是一个论文阅读助手。你必须只基于给定页面与锚点上下文回答，优先给出结构化总结，并明确指出回答对应的是当前页内容。若上下文不足，直接说明证据不足，不要编造。',
+          content: mode === 'rag'
+            ? '你是一个论文阅读助手。你必须只基于给定检索证据回答，优先给出结构化总结，并明确指出证据对应的页码或章节。若上下文不足，直接说明证据不足，不要编造。'
+            : '你是一个论文阅读助手。你必须只基于给定页面与锚点上下文回答，优先给出结构化总结，并明确指出回答对应的是当前页内容。若上下文不足，直接说明证据不足，不要编造。',
         },
         {
           role: 'user',
@@ -709,6 +992,8 @@ const requestChatCompletion = async ({ question, page, anchorId }) => {
     answer: payload?.choices?.[0]?.message?.content || '模型未返回内容。',
     paperTitle,
     citations,
+    mode,
+    retrievedChunks,
   }
 }
 
@@ -851,7 +1136,7 @@ const syncImagesToGithub = (taskId, imageDir, settings) => {
   updateTask(taskId, (current) => ({
     ...current,
     status: 'uploading-images',
-    detail: '正在同步图片到 GitHub。',
+    detail: '正在同步产物到 GitHub。',
     timestamp: nowTime(),
   }))
 
@@ -863,7 +1148,17 @@ const syncImagesToGithub = (taskId, imageDir, settings) => {
 
   const child = spawn(
     settings.pythonExePath || 'python',
-    [githubSyncPath, '--image-dir', imageDir, '--repo', settings.githubRepo, '--branch', settings.githubBranch],
+    [
+      githubSyncPath,
+      '--image-dir',
+      imageDir,
+      '--repo',
+      settings.githubRepo,
+      '--branch',
+      settings.githubBranch,
+      '--output-root',
+      settings.outputRoot || runsDir,
+    ],
     { cwd: rootDir, env },
   )
 
@@ -886,7 +1181,7 @@ const syncImagesToGithub = (taskId, imageDir, settings) => {
       updateTask(taskId, (current) => ({
         ...current,
         status: 'ready',
-        detail: '解析完成，图片同步任务已结束。',
+        detail: '图片已同步到 GitHub。',
         timestamp: nowTime(),
         logs: [...(current.logs ?? []), 'GitHub 图片同步完成。'],
       }))
@@ -896,7 +1191,7 @@ const syncImagesToGithub = (taskId, imageDir, settings) => {
     updateTask(taskId, (current) => ({
       ...current,
       status: 'failed',
-      detail: 'GitHub 图片同步失败。',
+      detail: 'GitHub 图片同步失败，请查看日志。',
       timestamp: nowTime(),
       logs: [...(current.logs ?? []), `GitHub 图片同步失败，退出码 ${code ?? 'unknown'}。`],
     }))
@@ -904,20 +1199,44 @@ const syncImagesToGithub = (taskId, imageDir, settings) => {
 }
 
 app.post('/api/github-sync', (req, res) => {
-  const imageDir = typeof req.body?.imageDir === 'string' ? req.body.imageDir : ''
+  const rawImageDir = typeof req.body?.imageDir === 'string' ? req.body.imageDir.trim() : ''
+  const rawArtifactDir = typeof req.body?.artifactDir === 'string' ? req.body.artifactDir.trim() : ''
+
+  const resolveWorkspacePath = (targetPath) => {
+    if (!targetPath) {
+      return ''
+    }
+
+    if (path.isAbsolute(targetPath)) {
+      return targetPath
+    }
+
+    const normalized = targetPath.replace(/^\/+/, '').split('/').join(path.sep)
+    return path.join(rootDir, normalized)
+  }
+
+  const artifactDir = resolveWorkspacePath(rawArtifactDir)
+  let imageDir = resolveWorkspacePath(rawImageDir)
+
+  if (artifactDir && fs.existsSync(path.join(artifactDir, 'images'))) {
+    imageDir = path.join(artifactDir, 'images')
+  } else if (imageDir && fs.existsSync(path.join(imageDir, 'images'))) {
+    imageDir = path.join(imageDir, 'images')
+  }
+
   if (!imageDir || !fs.existsSync(imageDir)) {
-    res.status(400).json({ error: 'imageDir is required and must exist' })
+    res.status(400).json({ error: 'imageDir or artifactDir is required and must exist' })
     return
   }
 
   const settings = readSettings()
   const task = {
     id: `task-${Date.now()}`,
-    title: '正在同步图片到 GitHub',
+    title: '正在同步产物到 GitHub',
     detail: `${imageDir} 已进入 GitHub 同步队列。`,
     status: 'uploading-images',
     timestamp: nowTime(),
-    logs: [`图片目录: ${imageDir}`],
+    logs: [`同步目录: ${imageDir}`],
   }
   prependTask(task)
   syncImagesToGithub(task.id, imageDir, settings)
@@ -940,10 +1259,78 @@ app.put('/api/settings', (req, res) => {
   res.json(nextSettings)
 })
 
+app.get('/api/rag/index-status', (req, res) => {
+  const artifactDir = typeof req.query.artifactDir === 'string' && req.query.artifactDir.trim()
+    ? req.query.artifactDir.trim()
+    : resolveActiveDocumentDir()
+
+  if (!artifactDir || !fs.existsSync(artifactDir)) {
+    res.status(400).json({ error: 'artifactDir is required and must exist' })
+    return
+  }
+
+  res.json({ ok: true, ...getRagStatus(artifactDir) })
+})
+
+app.post('/api/rag/index', async (req, res) => {
+  const settings = readSettings()
+  const artifactDir = typeof req.body?.artifactDir === 'string' && req.body.artifactDir.trim()
+    ? req.body.artifactDir.trim()
+    : resolveActiveDocumentDir()
+  const rebuild = Boolean(req.body?.rebuild)
+
+  if (!artifactDir || !fs.existsSync(artifactDir)) {
+    res.status(400).json({ error: 'artifactDir is required and must exist' })
+    return
+  }
+
+  const currentStatus = getRagStatus(artifactDir)
+  if (currentStatus.indexed && !rebuild) {
+    res.json({ ok: true, ...currentStatus })
+    return
+  }
+
+  try {
+    const result = await buildRagIndex(artifactDir, { settings })
+    res.json({ ok: true, ...result, ...getRagStatus(artifactDir) })
+  } catch (error) {
+    res.status(500).json({ error: error instanceof Error ? error.message : 'rag index build failed' })
+  }
+})
+
+app.post('/api/rag/retrieve', async (req, res) => {
+  const settings = readSettings()
+  const question = typeof req.body?.question === 'string' ? req.body.question.trim() : ''
+  const artifactDir = typeof req.body?.artifactDir === 'string' && req.body.artifactDir.trim()
+    ? req.body.artifactDir.trim()
+    : resolveActiveDocumentDir()
+  const topK = Number(req.body?.topK) || settings.ragTopK || 8
+
+  if (!question) {
+    res.status(400).json({ error: 'question is required' })
+    return
+  }
+
+  if (!artifactDir || !fs.existsSync(artifactDir)) {
+    res.status(400).json({ error: 'artifactDir is required and must exist' })
+    return
+  }
+
+  try {
+    const result = await retrieveRagChunks(artifactDir, { question, topK, settings })
+    res.json(result)
+  } catch (error) {
+    res.status(500).json({ error: error instanceof Error ? error.message : 'rag retrieval failed' })
+  }
+})
+
 app.post('/api/chat', async (req, res) => {
   const question = typeof req.body?.question === 'string' ? req.body.question.trim() : ''
   const page = Number(req.body?.page) || 1
   const anchorId = typeof req.body?.anchorId === 'string' ? req.body.anchorId : ''
+  const useRag = Boolean(req.body?.useRag)
+  const topK = Number(req.body?.topK) || undefined
+  const artifactDir = typeof req.body?.artifactDir === 'string' ? req.body.artifactDir.trim() : ''
 
   if (!question) {
     res.status(400).json({ error: 'question is required' })
@@ -951,7 +1338,7 @@ app.post('/api/chat', async (req, res) => {
   }
 
   try {
-    const result = await requestChatCompletion({ question, page, anchorId })
+    const result = await requestChatCompletion({ question, page, anchorId, artifactDir, useRag, topK })
     res.json(result)
   } catch (error) {
     res.status(500).json({ error: error instanceof Error ? error.message : 'chat failed' })

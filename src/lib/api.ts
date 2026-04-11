@@ -4,6 +4,8 @@ import type {
   DocumentPayload,
   LibraryDocument,
   ParseTask,
+  RagIndexStatus,
+  RagRetrieveResponse,
   RetryImportResponse,
   SelectLibraryResponse,
   SettingsState,
@@ -105,19 +107,51 @@ export const uploadAndImportPdf = async (file: File): Promise<UploadImportRespon
   return response.json() as Promise<UploadImportResponse>
 }
 
-export const createGithubSyncTask = async (imageDir: string): Promise<ParseTask> => {
+export const createGithubSyncTask = async (payload: {
+  imageDir?: string
+  artifactDir?: string
+}): Promise<ParseTask> => {
   return request<ParseTask>('/api/github-sync', {
     method: 'POST',
-    body: JSON.stringify({ imageDir }),
+    body: JSON.stringify(payload),
   })
 }
 
 export const askPaperQuestion = async (payload: {
   question: string
-  page: number
+  page?: number
   anchorId?: string
+  useRag?: boolean
+  topK?: number
+  artifactDir?: string
 }): Promise<ChatResponse> => {
   return request<ChatResponse>('/api/chat', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+}
+
+export const fetchRagIndexStatus = async (artifactDir?: string): Promise<RagIndexStatus> => {
+  const query = artifactDir ? `?artifactDir=${encodeURIComponent(artifactDir)}` : ''
+  return request<RagIndexStatus>(`/api/rag/index-status${query}`)
+}
+
+export const buildRagIndex = async (payload?: {
+  artifactDir?: string
+  rebuild?: boolean
+}): Promise<RagIndexStatus & { ok: boolean }> => {
+  return request<RagIndexStatus & { ok: boolean }>('/api/rag/index', {
+    method: 'POST',
+    body: JSON.stringify(payload ?? {}),
+  })
+}
+
+export const retrieveRagChunks = async (payload: {
+  question: string
+  artifactDir?: string
+  topK?: number
+}): Promise<RagRetrieveResponse> => {
+  return request<RagRetrieveResponse>('/api/rag/retrieve', {
     method: 'POST',
     body: JSON.stringify(payload),
   })

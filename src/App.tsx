@@ -5,7 +5,6 @@ import rehypeRaw from 'rehype-raw'
 import rehypeKatex from 'rehype-katex'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
-import { summaryCards } from './data/paperData'
 import {
   createImportTask,
   createGithubSyncTask,
@@ -273,6 +272,14 @@ const defaultSettings: SettingsState = {
   executionMode: 'api-first',
   mineruModelSource: 'local',
   mineruConfigPath: 'D:/code/paper-reader-ts/pdf_cut/MinerU/mineru.json',
+  ragEnabled: true,
+  ragAutoBuild: true,
+  ragModelName: 'BAAI/bge-m3',
+  ragModelPath: '',
+  ragTopK: 8,
+  ragChunkSize: 1200,
+  ragChunkOverlap: 150,
+  ragBatchSize: 4,
 }
 
 const getText = (items: unknown): string => {
@@ -374,7 +381,7 @@ function App() {
   const [assetBasePath, setAssetBasePath] = useState('/工业缺陷零样本分割2026/auto')
   const [paperTitle, setPaperTitle] = useState('SSVP: Synergistic Semantic-Visual Prompting')
   const [filePath, setFilePath] = useState('D:/code/paper-reader-ts/工业缺陷零样本分割2026/工业缺陷零样本分割2026.pdf')
-  const [folderPath, setFolderPath] = useState('D:/code/paper-reader-ts/workspace/runs')
+  const [folderPath, setFolderPath] = useState('/workspace/runs')
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [pendingAutoOpenTaskId, setPendingAutoOpenTaskId] = useState('')
   const [chatInput, setChatInput] = useState('请总结这篇论文的核心创新，并说明当前页重点。')
@@ -427,6 +434,7 @@ function App() {
     setFigures(document.figures)
     setPageMetas(document.pageMetas)
     setAssetBasePath(document.assetBasePath)
+    setFolderPath(`${document.assetBasePath}/images`)
     setPaperTitle(document.paperTitle)
     setMarkdown(document.markdown)
     setActivePage(1)
@@ -753,11 +761,17 @@ function App() {
   )
 
   const handleGithubSync = async () => {
-    if (!folderPath) {
+    const trimmedFolderPath = folderPath.trim()
+    const artifactDir = assetBasePath.trim()
+
+    if (!trimmedFolderPath && !artifactDir) {
       return
     }
 
-    const task = await createGithubSyncTask(folderPath)
+    const task = await createGithubSyncTask({
+      imageDir: trimmedFolderPath || undefined,
+      artifactDir: artifactDir || undefined,
+    })
     setTaskFeed((current) => [task, ...current])
     setActivePanel('assistant')
   }
@@ -838,6 +852,20 @@ function App() {
   }
 
   const isBootstrapping = !markdown && pages.length === 0 && !bootstrapError
+  const summaryCards = [
+    {
+      label: 'Sections',
+      value: String(outline.length).padStart(2, '0'),
+    },
+    {
+      label: 'Figures',
+      value: String(figures.length).padStart(2, '0'),
+    },
+    {
+      label: 'Pages',
+      value: String(pages.length).padStart(2, '0'),
+    },
+  ]
   const renderedHeadingUsage = new Map<string, number>()
   const renderMarkdownHeading = (
     level: number,
@@ -913,7 +941,7 @@ function App() {
                 <input value={filePath} onChange={(event) => setFilePath(event.target.value)} />
               </label>
               <label>
-                图片目录
+                同步目录
                 <input value={folderPath} onChange={(event) => setFolderPath(event.target.value)} />
               </label>
             </div>
@@ -1251,6 +1279,23 @@ function App() {
                   value={settings.mineruConfigPath}
                   onChange={(event) => setSettings({ ...settings, mineruConfigPath: event.target.value })}
                 />
+              </label>
+              <label>
+                RAG Embedding 模型名
+                <input
+                  value={settings.ragModelName}
+                  onChange={(event) => setSettings({ ...settings, ragModelName: event.target.value })}
+                  placeholder="BAAI/bge-m3"
+                />
+              </label>
+              <label>
+                RAG Embedding 模型路径
+                <input
+                  value={settings.ragModelPath}
+                  onChange={(event) => setSettings({ ...settings, ragModelPath: event.target.value })}
+                  placeholder="留空则使用模型名或默认下载路径"
+                />
+                <p className="settings-hint">可填写本地 Hugging Face 缓存目录或实际 snapshot 目录；留空时走默认模型名。</p>
               </label>
             </div>
 

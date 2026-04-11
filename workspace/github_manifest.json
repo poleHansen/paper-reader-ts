@@ -320,6 +320,894 @@
     "uploaded": true
   },
   {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields.md",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields.md",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields.md",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields_content_list.json",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields_content_list.json",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields_content_list.json",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields_content_list_v2.json",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields_content_list_v2.json",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields_content_list_v2.json",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields_layout.pdf",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields_layout.pdf",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields_layout.pdf",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields_middle.json",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields_middle.json",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields_middle.json",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields_model.json",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields_model.json",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields_model.json",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields_span.pdf",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields_span.pdf",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields_span.pdf",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/github_manifest.json",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/github_manifest.json",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/github_manifest.json",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/04614584508cfbc81c068bc021b75b639287a770ace42b1f9ec5e806c6228fb5.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/04614584508cfbc81c068bc021b75b639287a770ace42b1f9ec5e806c6228fb5.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/04614584508cfbc81c068bc021b75b639287a770ace42b1f9ec5e806c6228fb5.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/08f8501a7f153cde63e9bf1187a6f16fc7f78be43052f941cbec613b1a28f640.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/08f8501a7f153cde63e9bf1187a6f16fc7f78be43052f941cbec613b1a28f640.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/08f8501a7f153cde63e9bf1187a6f16fc7f78be43052f941cbec613b1a28f640.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/0e85f5b3a9c2294f4ea82ae4a7bc203634e3121c5d9410085409281bb15e16f6.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/0e85f5b3a9c2294f4ea82ae4a7bc203634e3121c5d9410085409281bb15e16f6.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/0e85f5b3a9c2294f4ea82ae4a7bc203634e3121c5d9410085409281bb15e16f6.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/1656073333728e17067f845bdc3f01b0f7d13ffd9574513bde45c168f6903c03.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/1656073333728e17067f845bdc3f01b0f7d13ffd9574513bde45c168f6903c03.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/1656073333728e17067f845bdc3f01b0f7d13ffd9574513bde45c168f6903c03.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/188a54cab824e248df33ab77484d7b836c57b410b0c68ebadb03ae23bd50bda4.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/188a54cab824e248df33ab77484d7b836c57b410b0c68ebadb03ae23bd50bda4.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/188a54cab824e248df33ab77484d7b836c57b410b0c68ebadb03ae23bd50bda4.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/1b2af80a7dfde7ff5e650d7a05ff52f1ec31133cd57e44ec8d6df251ac970d86.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/1b2af80a7dfde7ff5e650d7a05ff52f1ec31133cd57e44ec8d6df251ac970d86.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/1b2af80a7dfde7ff5e650d7a05ff52f1ec31133cd57e44ec8d6df251ac970d86.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/21ca73395e464058bbc3b687639b2545072a48a6ee65a78fe3f3f92fe3c0a3a3.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/21ca73395e464058bbc3b687639b2545072a48a6ee65a78fe3f3f92fe3c0a3a3.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/21ca73395e464058bbc3b687639b2545072a48a6ee65a78fe3f3f92fe3c0a3a3.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/22f67f3166d2bb1b0882a30bc61b546bf2cc1dec558e3f80002597d70fdf2713.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/22f67f3166d2bb1b0882a30bc61b546bf2cc1dec558e3f80002597d70fdf2713.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/22f67f3166d2bb1b0882a30bc61b546bf2cc1dec558e3f80002597d70fdf2713.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/29d22a76c0b120443bf220d9784be36c3abf452e868d65b7dc345eaac191f398.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/29d22a76c0b120443bf220d9784be36c3abf452e868d65b7dc345eaac191f398.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/29d22a76c0b120443bf220d9784be36c3abf452e868d65b7dc345eaac191f398.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/2aa63c55301b1a868f8cf9c9dfe7b052b9f645819037a11f0fec2a49d48e578d.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/2aa63c55301b1a868f8cf9c9dfe7b052b9f645819037a11f0fec2a49d48e578d.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/2aa63c55301b1a868f8cf9c9dfe7b052b9f645819037a11f0fec2a49d48e578d.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/35d3273c890a6fbd003fe4e630a871e8a8413eb643f6a70c440e8c395d62562b.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/35d3273c890a6fbd003fe4e630a871e8a8413eb643f6a70c440e8c395d62562b.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/35d3273c890a6fbd003fe4e630a871e8a8413eb643f6a70c440e8c395d62562b.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/3692d213a36a32a469748c1b56a173275a5a173f39af2218a785867514dceefe.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/3692d213a36a32a469748c1b56a173275a5a173f39af2218a785867514dceefe.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/3692d213a36a32a469748c1b56a173275a5a173f39af2218a785867514dceefe.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/3d1af85f1a2a3fbf1d57076c26fdd8dba6782307a93876f4fbb25375178e25d9.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/3d1af85f1a2a3fbf1d57076c26fdd8dba6782307a93876f4fbb25375178e25d9.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/3d1af85f1a2a3fbf1d57076c26fdd8dba6782307a93876f4fbb25375178e25d9.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/42b6366ec3cb3263aef0d80e409653d19a74f3a4976c2c0110688453de903598.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/42b6366ec3cb3263aef0d80e409653d19a74f3a4976c2c0110688453de903598.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/42b6366ec3cb3263aef0d80e409653d19a74f3a4976c2c0110688453de903598.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/46e6cf84f5ea450bf37548c776197563450af18c6c7a3cb42a2e4c4b5807f2f3.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/46e6cf84f5ea450bf37548c776197563450af18c6c7a3cb42a2e4c4b5807f2f3.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/46e6cf84f5ea450bf37548c776197563450af18c6c7a3cb42a2e4c4b5807f2f3.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/4b430f125afe181dfe0d56dc7639c602b2f1e0f159440c647288418fa57a7a3e.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/4b430f125afe181dfe0d56dc7639c602b2f1e0f159440c647288418fa57a7a3e.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/4b430f125afe181dfe0d56dc7639c602b2f1e0f159440c647288418fa57a7a3e.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/4edb377e7f9f980768e6410b7bd5b50b0a215dc6af052d4a363641309de584bc.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/4edb377e7f9f980768e6410b7bd5b50b0a215dc6af052d4a363641309de584bc.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/4edb377e7f9f980768e6410b7bd5b50b0a215dc6af052d4a363641309de584bc.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/581875f5f97ff6f85d922e4c2a0edcdd8c3e157a12e41fd80c6e69a836a8165d.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/581875f5f97ff6f85d922e4c2a0edcdd8c3e157a12e41fd80c6e69a836a8165d.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/581875f5f97ff6f85d922e4c2a0edcdd8c3e157a12e41fd80c6e69a836a8165d.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/5b9047779bacf379117527e07ee402a0d9ae63489a85c18f237f3ba4e0333ad2.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/5b9047779bacf379117527e07ee402a0d9ae63489a85c18f237f3ba4e0333ad2.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/5b9047779bacf379117527e07ee402a0d9ae63489a85c18f237f3ba4e0333ad2.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/5da90c2eb1e4fc94166023b0734792152f33e7979562dd9eb2ee7f7155c4c34c.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/5da90c2eb1e4fc94166023b0734792152f33e7979562dd9eb2ee7f7155c4c34c.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/5da90c2eb1e4fc94166023b0734792152f33e7979562dd9eb2ee7f7155c4c34c.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/6af9c1af293456cf5aa17697860a3fa87841a63c5d9adf191a7a0b21653d34c6.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/6af9c1af293456cf5aa17697860a3fa87841a63c5d9adf191a7a0b21653d34c6.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/6af9c1af293456cf5aa17697860a3fa87841a63c5d9adf191a7a0b21653d34c6.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/6e551ab3c3ff96a6da06c2b610407d490edd71285ae7e6e8c8635399d55e8b93.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/6e551ab3c3ff96a6da06c2b610407d490edd71285ae7e6e8c8635399d55e8b93.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/6e551ab3c3ff96a6da06c2b610407d490edd71285ae7e6e8c8635399d55e8b93.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/6ef882ca46d70f9da38cc707128ebf0d17e1dcc36096d03c8cf9210dd5e95bbd.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/6ef882ca46d70f9da38cc707128ebf0d17e1dcc36096d03c8cf9210dd5e95bbd.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/6ef882ca46d70f9da38cc707128ebf0d17e1dcc36096d03c8cf9210dd5e95bbd.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/6f39f0143272e1eaeead60d33bb8e396ac326d0ee437ade0cc3812679c271d8e.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/6f39f0143272e1eaeead60d33bb8e396ac326d0ee437ade0cc3812679c271d8e.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/6f39f0143272e1eaeead60d33bb8e396ac326d0ee437ade0cc3812679c271d8e.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/74b06d2adda1252d68c98e7abf8e0a251aa51589c82878b51de6e198710272d8.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/74b06d2adda1252d68c98e7abf8e0a251aa51589c82878b51de6e198710272d8.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/74b06d2adda1252d68c98e7abf8e0a251aa51589c82878b51de6e198710272d8.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/75e61b77309d55d62285452f39bccc7d5a3c53543322791ec45d2d3635d49b38.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/75e61b77309d55d62285452f39bccc7d5a3c53543322791ec45d2d3635d49b38.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/75e61b77309d55d62285452f39bccc7d5a3c53543322791ec45d2d3635d49b38.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/75f7643185a8f4a508765fb67189c19c72b67bbc612ab0d4a4a001de96039e6e.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/75f7643185a8f4a508765fb67189c19c72b67bbc612ab0d4a4a001de96039e6e.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/75f7643185a8f4a508765fb67189c19c72b67bbc612ab0d4a4a001de96039e6e.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/7829e0b1c8a34a91e0130e22e92e3126bb5d11c1266600b043503534f7db9a9d.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/7829e0b1c8a34a91e0130e22e92e3126bb5d11c1266600b043503534f7db9a9d.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/7829e0b1c8a34a91e0130e22e92e3126bb5d11c1266600b043503534f7db9a9d.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/8129e1392185e5dfd3511e321bfa4129d7da54815bac3b72f2bb33752f1e5ce6.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/8129e1392185e5dfd3511e321bfa4129d7da54815bac3b72f2bb33752f1e5ce6.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/8129e1392185e5dfd3511e321bfa4129d7da54815bac3b72f2bb33752f1e5ce6.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/82d9f761509390d28180f630c4d0dabf1aba6c1b242a9ca5664a7043b8fcaa27.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/82d9f761509390d28180f630c4d0dabf1aba6c1b242a9ca5664a7043b8fcaa27.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/82d9f761509390d28180f630c4d0dabf1aba6c1b242a9ca5664a7043b8fcaa27.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/867074f20fe58577abee402bcf51a19f202cdd952b1f2e0a1927e5bd41a66ef3.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/867074f20fe58577abee402bcf51a19f202cdd952b1f2e0a1927e5bd41a66ef3.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/867074f20fe58577abee402bcf51a19f202cdd952b1f2e0a1927e5bd41a66ef3.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/8d208e3697991ea81917e0a65c0af7b18f59e0e48545300a2249cffa9182b5c6.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/8d208e3697991ea81917e0a65c0af7b18f59e0e48545300a2249cffa9182b5c6.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/8d208e3697991ea81917e0a65c0af7b18f59e0e48545300a2249cffa9182b5c6.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/8de5b08e6944bc8c6bcf45db2dca42d45e3c0ad9d28587c38a0d8292dfb7848f.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/8de5b08e6944bc8c6bcf45db2dca42d45e3c0ad9d28587c38a0d8292dfb7848f.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/8de5b08e6944bc8c6bcf45db2dca42d45e3c0ad9d28587c38a0d8292dfb7848f.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/944f34f4a05e190315a2fa261d12899a69ad5ec6852061766b95a6452d718493.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/944f34f4a05e190315a2fa261d12899a69ad5ec6852061766b95a6452d718493.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/944f34f4a05e190315a2fa261d12899a69ad5ec6852061766b95a6452d718493.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/a355b07b0eaba5351090dc60ffe9a7d104605f94b7a98668948e02b088d5d47d.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/a355b07b0eaba5351090dc60ffe9a7d104605f94b7a98668948e02b088d5d47d.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/a355b07b0eaba5351090dc60ffe9a7d104605f94b7a98668948e02b088d5d47d.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/a920ddb36b9e25ad08b26b7466540db449388bf40504b6a44b75655fcd25efab.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/a920ddb36b9e25ad08b26b7466540db449388bf40504b6a44b75655fcd25efab.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/a920ddb36b9e25ad08b26b7466540db449388bf40504b6a44b75655fcd25efab.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/a98fdb3429ac510384a0f8f3ccb3ea93fb354e4091ca165c46b6c4bd5030e47c.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/a98fdb3429ac510384a0f8f3ccb3ea93fb354e4091ca165c46b6c4bd5030e47c.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/a98fdb3429ac510384a0f8f3ccb3ea93fb354e4091ca165c46b6c4bd5030e47c.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/aea9a02f73c643935452754e32c7912d42b1169b174065ce472d44913e59fe45.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/aea9a02f73c643935452754e32c7912d42b1169b174065ce472d44913e59fe45.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/aea9a02f73c643935452754e32c7912d42b1169b174065ce472d44913e59fe45.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/b035badfd5af105016ab246b5083eeec3f42b189a6b570831c6d0a8868d0e963.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/b035badfd5af105016ab246b5083eeec3f42b189a6b570831c6d0a8868d0e963.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/b035badfd5af105016ab246b5083eeec3f42b189a6b570831c6d0a8868d0e963.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/b0edfe5ce6d9426a3419f6e7c7ac153a1894231a4289a01c41862b56970bc6b4.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/b0edfe5ce6d9426a3419f6e7c7ac153a1894231a4289a01c41862b56970bc6b4.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/b0edfe5ce6d9426a3419f6e7c7ac153a1894231a4289a01c41862b56970bc6b4.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/b81c1245e71eff0d4228ca31d73b8993f4012a2f6d35fdfa829d59983cfa2ed4.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/b81c1245e71eff0d4228ca31d73b8993f4012a2f6d35fdfa829d59983cfa2ed4.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/b81c1245e71eff0d4228ca31d73b8993f4012a2f6d35fdfa829d59983cfa2ed4.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/b88ed63666ad2784429b0e16d668887da0fd30db2f1a0bc406206d3f9458da08.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/b88ed63666ad2784429b0e16d668887da0fd30db2f1a0bc406206d3f9458da08.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/b88ed63666ad2784429b0e16d668887da0fd30db2f1a0bc406206d3f9458da08.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/b8aebcbb07f336d6fb3f72a357e154fb14f06c97b0a71ae35779471ad1a4294b.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/b8aebcbb07f336d6fb3f72a357e154fb14f06c97b0a71ae35779471ad1a4294b.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/b8aebcbb07f336d6fb3f72a357e154fb14f06c97b0a71ae35779471ad1a4294b.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/be0c03cd567735ee96081748a52f93a053cec742596074fb8200eda6d399bf71.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/be0c03cd567735ee96081748a52f93a053cec742596074fb8200eda6d399bf71.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/be0c03cd567735ee96081748a52f93a053cec742596074fb8200eda6d399bf71.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/c1711a7f012a1b5bb4dd5041d9f9ce89e97c62f14e52f4e412bdb869288605c6.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/c1711a7f012a1b5bb4dd5041d9f9ce89e97c62f14e52f4e412bdb869288605c6.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/c1711a7f012a1b5bb4dd5041d9f9ce89e97c62f14e52f4e412bdb869288605c6.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/c1b016fc43c17eb6d3f44e90551aac66b6acbe0539bf6dfb539ac33e1b9396da.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/c1b016fc43c17eb6d3f44e90551aac66b6acbe0539bf6dfb539ac33e1b9396da.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/c1b016fc43c17eb6d3f44e90551aac66b6acbe0539bf6dfb539ac33e1b9396da.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/d892fef85386eacd51e0217ce1c40611da3248f82429d1ecd1df271566ffe22c.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/d892fef85386eacd51e0217ce1c40611da3248f82429d1ecd1df271566ffe22c.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/d892fef85386eacd51e0217ce1c40611da3248f82429d1ecd1df271566ffe22c.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/e0ae150e5089ca0a5c3bb2ee6ad4841fd8caf48aa67e603caf6417f32bbf3ef3.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/e0ae150e5089ca0a5c3bb2ee6ad4841fd8caf48aa67e603caf6417f32bbf3ef3.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/e0ae150e5089ca0a5c3bb2ee6ad4841fd8caf48aa67e603caf6417f32bbf3ef3.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/e17df57f130dd45257777fe478b4a5af7a6c9c122cbbb1ce019bcd9cfa051082.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/e17df57f130dd45257777fe478b4a5af7a6c9c122cbbb1ce019bcd9cfa051082.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/e17df57f130dd45257777fe478b4a5af7a6c9c122cbbb1ce019bcd9cfa051082.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/ee5b00c04c33ddab78dd5c52b4cb604a9dd626b6cc752d0a8b4f915ac545f2cd.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/ee5b00c04c33ddab78dd5c52b4cb604a9dd626b6cc752d0a8b4f915ac545f2cd.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/ee5b00c04c33ddab78dd5c52b4cb604a9dd626b6cc752d0a8b4f915ac545f2cd.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/f61aea6107fcf9fe58a953f41bc379a8aa07398566cec193482d5b391fe90bfc.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/f61aea6107fcf9fe58a953f41bc379a8aa07398566cec193482d5b391fe90bfc.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/f61aea6107fcf9fe58a953f41bc379a8aa07398566cec193482d5b391fe90bfc.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/f9c9c84e5ce93bd55ecd05896d2534736e5842774f330ac5f9ea8033d9c0d002.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/f9c9c84e5ce93bd55ecd05896d2534736e5842774f330ac5f9ea8033d9c0d002.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/images/f9c9c84e5ce93bd55ecd05896d2534736e5842774f330ac5f9ea8033d9c0d002.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/rag/build_info.json",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/rag/build_info.json",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/rag/build_info.json",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/rag/chunks.jsonl",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/rag/chunks.jsonl",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/rag/chunks.jsonl",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/rag/index.faiss",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/rag/index.faiss",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/rag/index.faiss",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/rag/metadata.json",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/rag/metadata.json",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/rag/metadata.json",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing.md",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing.md",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing.md",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing_content_list.json",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing_content_list.json",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing_content_list.json",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing_content_list_v2.json",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing_content_list_v2.json",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing_content_list_v2.json",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing_layout.pdf",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing_layout.pdf",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing_layout.pdf",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing_middle.json",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing_middle.json",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing_middle.json",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing_model.json",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing_model.json",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing_model.json",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing_span.pdf",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing_span.pdf",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing_span.pdf",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/1728311615d1dafdae80944ff63286933fab5a6f8e4cbbbf5a966fb0dc1641de.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/1728311615d1dafdae80944ff63286933fab5a6f8e4cbbbf5a966fb0dc1641de.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/1728311615d1dafdae80944ff63286933fab5a6f8e4cbbbf5a966fb0dc1641de.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/1ce9a857a78ec872be3f0beea3abaea0f1d263f159fb7c17689323516b846cfc.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/1ce9a857a78ec872be3f0beea3abaea0f1d263f159fb7c17689323516b846cfc.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/1ce9a857a78ec872be3f0beea3abaea0f1d263f159fb7c17689323516b846cfc.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/1d3e8727cea2dbb7d2d5126ae0727410b7e2a048fd281d9de355ac1d21577fe4.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/1d3e8727cea2dbb7d2d5126ae0727410b7e2a048fd281d9de355ac1d21577fe4.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/1d3e8727cea2dbb7d2d5126ae0727410b7e2a048fd281d9de355ac1d21577fe4.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/21756731e2a99a2cb632ea8e05e0d7dae86f56053809554b3f72033b979306f4.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/21756731e2a99a2cb632ea8e05e0d7dae86f56053809554b3f72033b979306f4.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/21756731e2a99a2cb632ea8e05e0d7dae86f56053809554b3f72033b979306f4.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/2876d8218b32bdceac5446cf47b76d612c4cbf40c38430e6a2636000bfa14749.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/2876d8218b32bdceac5446cf47b76d612c4cbf40c38430e6a2636000bfa14749.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/2876d8218b32bdceac5446cf47b76d612c4cbf40c38430e6a2636000bfa14749.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/2a8a27396ca719012bb5927eef225911b556a1494251fb4a172b6c809447ec14.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/2a8a27396ca719012bb5927eef225911b556a1494251fb4a172b6c809447ec14.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/2a8a27396ca719012bb5927eef225911b556a1494251fb4a172b6c809447ec14.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/320ab1b97b35331f3f20b60690118d2fc46c3f9c7628412cad04c392c864a778.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/320ab1b97b35331f3f20b60690118d2fc46c3f9c7628412cad04c392c864a778.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/320ab1b97b35331f3f20b60690118d2fc46c3f9c7628412cad04c392c864a778.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/3be821ca30d28d829654c931f6c87a8d5ad1defd1f938dd28210b97b055d1669.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/3be821ca30d28d829654c931f6c87a8d5ad1defd1f938dd28210b97b055d1669.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/3be821ca30d28d829654c931f6c87a8d5ad1defd1f938dd28210b97b055d1669.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/406471c842266212502b8766bce30ada135a397272884bda88e871e943d137ba.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/406471c842266212502b8766bce30ada135a397272884bda88e871e943d137ba.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/406471c842266212502b8766bce30ada135a397272884bda88e871e943d137ba.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/4265212cf7da513102f2ed2c5f4804e965958af517e697babd9ffab081a1b0a3.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/4265212cf7da513102f2ed2c5f4804e965958af517e697babd9ffab081a1b0a3.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/4265212cf7da513102f2ed2c5f4804e965958af517e697babd9ffab081a1b0a3.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/4afb36781fa012788133cbcdb334326cdb8062dbef812842cbaafa85272f312f.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/4afb36781fa012788133cbcdb334326cdb8062dbef812842cbaafa85272f312f.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/4afb36781fa012788133cbcdb334326cdb8062dbef812842cbaafa85272f312f.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/4e3e458d5c4ded99488ab2246540af35020d52d7985a10f297b74ec63312a227.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/4e3e458d5c4ded99488ab2246540af35020d52d7985a10f297b74ec63312a227.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/4e3e458d5c4ded99488ab2246540af35020d52d7985a10f297b74ec63312a227.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/513b8a85fa949e8084e9184b422ad69f80be00d27ac6e1766a4182e60771eab9.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/513b8a85fa949e8084e9184b422ad69f80be00d27ac6e1766a4182e60771eab9.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/513b8a85fa949e8084e9184b422ad69f80be00d27ac6e1766a4182e60771eab9.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/56f9dcc1cceff1d740a3bcbffac25f176c3fa1112caba813fa77434ab0b01f7a.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/56f9dcc1cceff1d740a3bcbffac25f176c3fa1112caba813fa77434ab0b01f7a.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/56f9dcc1cceff1d740a3bcbffac25f176c3fa1112caba813fa77434ab0b01f7a.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/62e6448c5834d8f5781e08c7d0346ae95a99987c91e8bb55d458985e0549a312.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/62e6448c5834d8f5781e08c7d0346ae95a99987c91e8bb55d458985e0549a312.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/62e6448c5834d8f5781e08c7d0346ae95a99987c91e8bb55d458985e0549a312.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/65d6697685917527478abfade0b14fb3ef85a91c3d776a7e278ce65ef3478ec7.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/65d6697685917527478abfade0b14fb3ef85a91c3d776a7e278ce65ef3478ec7.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/65d6697685917527478abfade0b14fb3ef85a91c3d776a7e278ce65ef3478ec7.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/672226e3c4bf14d2fd8b41e9051331daf38c8ac162c689d72662e842c73dfd56.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/672226e3c4bf14d2fd8b41e9051331daf38c8ac162c689d72662e842c73dfd56.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/672226e3c4bf14d2fd8b41e9051331daf38c8ac162c689d72662e842c73dfd56.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/7147fb640b327bc09ea7dfacd810af38ac0b55f36f0fe799c51775d58f12ec62.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/7147fb640b327bc09ea7dfacd810af38ac0b55f36f0fe799c51775d58f12ec62.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/7147fb640b327bc09ea7dfacd810af38ac0b55f36f0fe799c51775d58f12ec62.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/78ab0cd60e4be2b28d731631e3dddef7d6c1b7c88518c98f189f92587974ff82.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/78ab0cd60e4be2b28d731631e3dddef7d6c1b7c88518c98f189f92587974ff82.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/78ab0cd60e4be2b28d731631e3dddef7d6c1b7c88518c98f189f92587974ff82.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/85d05ee929938575a3d6f15c83efdf1fcce68161dd89b4b56987d9f918c08ef9.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/85d05ee929938575a3d6f15c83efdf1fcce68161dd89b4b56987d9f918c08ef9.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/85d05ee929938575a3d6f15c83efdf1fcce68161dd89b4b56987d9f918c08ef9.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/86998f980193cb27d1891ed12d7eb6e50d104b7ff4b39299903848f03ca89799.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/86998f980193cb27d1891ed12d7eb6e50d104b7ff4b39299903848f03ca89799.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/86998f980193cb27d1891ed12d7eb6e50d104b7ff4b39299903848f03ca89799.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/8bb1bdad704c624eee35b8082e10ce8e8ac67301f1e3d2464b233ea2a4da9c68.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/8bb1bdad704c624eee35b8082e10ce8e8ac67301f1e3d2464b233ea2a4da9c68.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/8bb1bdad704c624eee35b8082e10ce8e8ac67301f1e3d2464b233ea2a4da9c68.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/8cf1a4da7028414138b25cbfcc3a617cb3fb8861b7f174569babae38763864b4.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/8cf1a4da7028414138b25cbfcc3a617cb3fb8861b7f174569babae38763864b4.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/8cf1a4da7028414138b25cbfcc3a617cb3fb8861b7f174569babae38763864b4.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/9afa5f09ef065f633ee20c54cc61968e698528522b2c7c33d4a4427dff39f217.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/9afa5f09ef065f633ee20c54cc61968e698528522b2c7c33d4a4427dff39f217.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/9afa5f09ef065f633ee20c54cc61968e698528522b2c7c33d4a4427dff39f217.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/a015be31e7da5558fefe44dc333976eafb12448f4410ff692eabd2c543eb5d5b.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/a015be31e7da5558fefe44dc333976eafb12448f4410ff692eabd2c543eb5d5b.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/a015be31e7da5558fefe44dc333976eafb12448f4410ff692eabd2c543eb5d5b.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/a015f73daabef3ae934998a66c9594f10cd060c51b18d297f1cdbaa2ea52ae44.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/a015f73daabef3ae934998a66c9594f10cd060c51b18d297f1cdbaa2ea52ae44.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/a015f73daabef3ae934998a66c9594f10cd060c51b18d297f1cdbaa2ea52ae44.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/a96f8d7efec722d3b29fdbfc0f3692b0253f8f7d89c698a10ba5f8e48190d70b.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/a96f8d7efec722d3b29fdbfc0f3692b0253f8f7d89c698a10ba5f8e48190d70b.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/a96f8d7efec722d3b29fdbfc0f3692b0253f8f7d89c698a10ba5f8e48190d70b.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/acc8d682514a6bc4fb3380b45e58bc3dfd39ffcbaf4bf8f2a797b53a1f4e160b.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/acc8d682514a6bc4fb3380b45e58bc3dfd39ffcbaf4bf8f2a797b53a1f4e160b.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/acc8d682514a6bc4fb3380b45e58bc3dfd39ffcbaf4bf8f2a797b53a1f4e160b.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/b52600e84d942aa37b73b8f1e0454bd842afef3f9cfbed06e858ecdcfaab5649.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/b52600e84d942aa37b73b8f1e0454bd842afef3f9cfbed06e858ecdcfaab5649.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/b52600e84d942aa37b73b8f1e0454bd842afef3f9cfbed06e858ecdcfaab5649.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/b6aa30c6236287eb3176338e2f2099f61b5c1f8372f31d354c0dcc8b57275a6e.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/b6aa30c6236287eb3176338e2f2099f61b5c1f8372f31d354c0dcc8b57275a6e.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/b6aa30c6236287eb3176338e2f2099f61b5c1f8372f31d354c0dcc8b57275a6e.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/b6e3b4b7da1ac384b5dec14b0af5d2ca6984d7e505a254f18707d3ae8b256de2.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/b6e3b4b7da1ac384b5dec14b0af5d2ca6984d7e505a254f18707d3ae8b256de2.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/b6e3b4b7da1ac384b5dec14b0af5d2ca6984d7e505a254f18707d3ae8b256de2.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/c3d6044790d0da6c667ff307e5fcd2c4f80dc103a0731ef5c9c021a95b3a5a65.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/c3d6044790d0da6c667ff307e5fcd2c4f80dc103a0731ef5c9c021a95b3a5a65.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/c3d6044790d0da6c667ff307e5fcd2c4f80dc103a0731ef5c9c021a95b3a5a65.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/c676cab849b4c7c8851bef9c53de937f36b79ac2f1ea53ca833f32c31f4f5783.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/c676cab849b4c7c8851bef9c53de937f36b79ac2f1ea53ca833f32c31f4f5783.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/c676cab849b4c7c8851bef9c53de937f36b79ac2f1ea53ca833f32c31f4f5783.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/d67f7f3c64cfbf6cefd96e2fecc386fc1d960956a4357ee0a39836e45f0e725d.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/d67f7f3c64cfbf6cefd96e2fecc386fc1d960956a4357ee0a39836e45f0e725d.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/d67f7f3c64cfbf6cefd96e2fecc386fc1d960956a4357ee0a39836e45f0e725d.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/d9c4598ad906296c59ccbae2d2a74227b2326bf04aa0794d7a5c7a3d0272d7d0.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/d9c4598ad906296c59ccbae2d2a74227b2326bf04aa0794d7a5c7a3d0272d7d0.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/d9c4598ad906296c59ccbae2d2a74227b2326bf04aa0794d7a5c7a3d0272d7d0.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/da876fd4f062c74d0bd1ea8d7c7997f312b2700980ab02194441723bdad60e3a.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/da876fd4f062c74d0bd1ea8d7c7997f312b2700980ab02194441723bdad60e3a.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/da876fd4f062c74d0bd1ea8d7c7997f312b2700980ab02194441723bdad60e3a.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/e00f74009959402e9d556ce6413d748faa94650b30368336660d04d2ecd7b1af.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/e00f74009959402e9d556ce6413d748faa94650b30368336660d04d2ecd7b1af.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/e00f74009959402e9d556ce6413d748faa94650b30368336660d04d2ecd7b1af.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/e8730d6be1666b9aa7ac877d031e898f62227fa3f813f384dffeb523e9091a1d.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/e8730d6be1666b9aa7ac877d031e898f62227fa3f813f384dffeb523e9091a1d.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/e8730d6be1666b9aa7ac877d031e898f62227fa3f813f384dffeb523e9091a1d.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/ec398640d52654ea6f80e402f920b0841c62b44fa67c886b24817812c7a1c120.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/ec398640d52654ea6f80e402f920b0841c62b44fa67c886b24817812c7a1c120.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/ec398640d52654ea6f80e402f920b0841c62b44fa67c886b24817812c7a1c120.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/f23d51a341f745e388efdf0aa7e8969ee84936d65b3a4ed5554b6eb10b818caa.jpg",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/f23d51a341f745e388efdf0aa7e8969ee84936d65b3a4ed5554b6eb10b818caa.jpg",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/wavehd-fix-verify-2/1775916590741-WaveDH-Wavelet-Sub-bands-Guided-ConvNetfor-Efficient-Image-Dehazing/auto/images/f23d51a341f745e388efdf0aa7e8969ee84936d65b3a4ed5554b6eb10b818caa.jpg",
+    "uploaded": true
+  },
+  {
     "localPath": "D:/code/paper-reader-ts/workspace/runs/zone-yolo-local-test/Zone-YOLO_Vision-Language_Object_Detection_Using_Zone_Prompt/auto/images/055088a7a906b77e16ceb8b2befbeb1482b2826b51a5ab52b8c2c631b6e66abe.jpg",
     "repo": "poleHansen/paper-reader-assets",
     "branch": "main",
@@ -565,6 +1453,38 @@
     "branch": "main",
     "remotePath": "zone-yolo-local-test/Zone-YOLO_Vision-Language_Object_Detection_Using_Zone_Prompt/auto/images/f9d3411594b7b5ad8bdb8303610c8dabf8f140a2b1806a1cf13ef8b8df737fcc.jpg",
     "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/zone-yolo-local-test/Zone-YOLO_Vision-Language_Object_Detection_Using_Zone_Prompt/auto/images/f9d3411594b7b5ad8bdb8303610c8dabf8f140a2b1806a1cf13ef8b8df737fcc.jpg",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/zone-yolo-local-test/Zone-YOLO_Vision-Language_Object_Detection_Using_Zone_Prompt/auto/rag/build_info.json",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "zone-yolo-local-test/Zone-YOLO_Vision-Language_Object_Detection_Using_Zone_Prompt/auto/rag/build_info.json",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/zone-yolo-local-test/Zone-YOLO_Vision-Language_Object_Detection_Using_Zone_Prompt/auto/rag/build_info.json",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/zone-yolo-local-test/Zone-YOLO_Vision-Language_Object_Detection_Using_Zone_Prompt/auto/rag/chunks.jsonl",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "zone-yolo-local-test/Zone-YOLO_Vision-Language_Object_Detection_Using_Zone_Prompt/auto/rag/chunks.jsonl",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/zone-yolo-local-test/Zone-YOLO_Vision-Language_Object_Detection_Using_Zone_Prompt/auto/rag/chunks.jsonl",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/zone-yolo-local-test/Zone-YOLO_Vision-Language_Object_Detection_Using_Zone_Prompt/auto/rag/index.faiss",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "zone-yolo-local-test/Zone-YOLO_Vision-Language_Object_Detection_Using_Zone_Prompt/auto/rag/index.faiss",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/zone-yolo-local-test/Zone-YOLO_Vision-Language_Object_Detection_Using_Zone_Prompt/auto/rag/index.faiss",
+    "uploaded": true
+  },
+  {
+    "localPath": "D:/code/paper-reader-ts/workspace/runs/zone-yolo-local-test/Zone-YOLO_Vision-Language_Object_Detection_Using_Zone_Prompt/auto/rag/metadata.json",
+    "repo": "poleHansen/paper-reader-assets",
+    "branch": "main",
+    "remotePath": "zone-yolo-local-test/Zone-YOLO_Vision-Language_Object_Detection_Using_Zone_Prompt/auto/rag/metadata.json",
+    "remoteUrl": "https://raw.githubusercontent.com/poleHansen/paper-reader-assets/main/zone-yolo-local-test/Zone-YOLO_Vision-Language_Object_Detection_Using_Zone_Prompt/auto/rag/metadata.json",
     "uploaded": true
   },
   {

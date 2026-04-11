@@ -1,7 +1,6 @@
-import documentPages from '../../工业缺陷零样本分割2026/auto/工业缺陷零样本分割2026_content_list_v2.json'
 import type { FigureItem, OutlineItem, Page, ParseTask } from '../types'
 
-const rawPages = documentPages as unknown as Page[]
+const rawPages: Page[] = []
 
 const textFromItems = (items: unknown): string => {
   if (!Array.isArray(items)) {
