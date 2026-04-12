@@ -1,14 +1,20 @@
 import type {
   ChatResponse,
+  ConversationDetail,
+  ConversationRequestMessage,
+  ConversationSummary,
   CondaEnvironmentsResponse,
   DocumentPayload,
   LibraryDocument,
+  ModelTestResponse,
+  PaperSummaryResponse,
   ParseTask,
   RagIndexStatus,
   RagRetrieveResponse,
   RetryImportResponse,
   SelectLibraryResponse,
   SettingsState,
+  StreamEvent,
   UploadImportResponse,
 } from '../types'
 
@@ -21,7 +27,24 @@ const request = async <T>(input: string, init?: RequestInit): Promise<T> => {
   })
 
   if (!response.ok) {
-    throw new Error(`Request failed: ${response.status}`)
+    let detail = ''
+
+    try {
+      const payload = await response.json() as { error?: unknown; message?: unknown }
+      detail = typeof payload.error === 'string'
+        ? payload.error
+        : typeof payload.message === 'string'
+          ? payload.message
+          : ''
+    } catch {
+      try {
+        detail = await response.text()
+      } catch {
+        detail = ''
+      }
+    }
+
+    throw new Error(detail ? `Request failed: ${response.status} ${detail}` : `Request failed: ${response.status}`)
   }
 
   return response.json() as Promise<T>
@@ -131,6 +154,120 @@ export const askPaperQuestion = async (payload: {
   })
 }
 
+const streamRequest = async (
+  input: string,
+  payload: Record<string, unknown>,
+  onEvent: (event: StreamEvent) => void,
+): Promise<void> => {
+  const response = await fetch(input, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ ...payload, stream: true }),
+  })
+
+  if (!response.ok || !response.body) {
+    let detail = ''
+
+    try {
+      detail = await response.text()
+    } catch {
+      detail = ''
+    }
+
+    throw new Error(detail ? `Request failed: ${response.status} ${detail}` : `Request failed: ${response.status}`)
+  }
+
+  const reader = response.body.getReader()
+  const decoder = new TextDecoder()
+  let buffer = ''
+
+  while (true) {
+    const { value, done } = await reader.read()
+    if (done) {
+      break
+    }
+
+    buffer += decoder.decode(value, { stream: true })
+    const lines = buffer.split(/\r?\n/)
+    buffer = lines.pop() ?? ''
+
+    for (const line of lines) {
+      const trimmed = line.trim()
+      if (!trimmed) {
+        continue
+      }
+
+      const event = JSON.parse(trimmed) as StreamEvent
+      onEvent(event)
+
+      if (event.type === 'error') {
+        throw new Error(event.error)
+      }
+    }
+  }
+
+  const trailing = buffer.trim()
+  if (trailing) {
+    const event = JSON.parse(trailing) as StreamEvent
+    onEvent(event)
+
+    if (event.type === 'error') {
+      throw new Error(event.error)
+    }
+  }
+}
+
+export const streamPaperQuestion = async (payload: {
+  question: string
+  page?: number
+  anchorId?: string
+  useRag?: boolean
+  topK?: number
+  artifactDir?: string
+  conversationId?: string
+  history?: ConversationRequestMessage[]
+}, onEvent: (event: StreamEvent) => void): Promise<void> => {
+  return streamRequest('/api/chat', payload, onEvent)
+}
+
+export const summarizePaper = async (payload?: {
+  artifactDir?: string
+}): Promise<PaperSummaryResponse> => {
+  return request<PaperSummaryResponse>('/api/paper/summary', {
+    method: 'POST',
+    body: JSON.stringify(payload ?? {}),
+  })
+}
+
+export const streamPaperSummary = async (payload: {
+  artifactDir?: string
+  conversationId?: string
+  history?: ConversationRequestMessage[]
+}, onEvent: (event: StreamEvent) => void): Promise<void> => {
+  return streamRequest('/api/paper/summary', payload, onEvent)
+}
+
+export const fetchConversations = async (): Promise<ConversationSummary[]> => {
+  return request<ConversationSummary[]>('/api/conversations')
+}
+
+export const fetchConversation = async (conversationId: string): Promise<ConversationDetail> => {
+  return request<ConversationDetail>(`/api/conversations/${encodeURIComponent(conversationId)}`)
+}
+
+export const createConversation = async (payload?: {
+  artifactDir?: string
+  paperTitle?: string
+  title?: string
+}): Promise<ConversationDetail> => {
+  return request<ConversationDetail>('/api/conversations', {
+    method: 'POST',
+    body: JSON.stringify(payload ?? {}),
+  })
+}
+
 export const fetchRagIndexStatus = async (artifactDir?: string): Promise<RagIndexStatus> => {
   const query = artifactDir ? `?artifactDir=${encodeURIComponent(artifactDir)}` : ''
   return request<RagIndexStatus>(`/api/rag/index-status${query}`)
@@ -154,5 +291,12 @@ export const retrieveRagChunks = async (payload: {
   return request<RagRetrieveResponse>('/api/rag/retrieve', {
     method: 'POST',
     body: JSON.stringify(payload),
+  })
+}
+
+export const testModelConnection = async (): Promise<ModelTestResponse> => {
+  return request<ModelTestResponse>('/api/model/test', {
+    method: 'POST',
+    body: JSON.stringify({}),
   })
 }

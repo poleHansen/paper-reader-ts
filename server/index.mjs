@@ -13,6 +13,7 @@ const __dirname = path.dirname(__filename)
 const rootDir = path.resolve(__dirname, '..')
 const dataDir = path.join(rootDir, '工业缺陷零样本分割2026', 'auto')
 const settingsPath = path.join(rootDir, 'server', 'settings.json')
+const conversationsPath = path.join(rootDir, 'server', 'conversations.json')
 const uploadsDir = path.join(rootDir, 'workspace', 'imports')
 const runsDir = path.join(rootDir, 'workspace', 'runs')
 const workerPath = path.join(rootDir, 'server', 'mineru_worker.py')
@@ -28,6 +29,7 @@ app.use(express.json())
 const defaultSettings = {
   provider: 'OpenAI Compatible',
   model: 'gpt-4.1-mini',
+  openaiApiMode: 'chat',
   apiBaseUrl: 'https://api.openai.com/v1',
   apiKey: '',
   githubRepo: 'honor/paper-reader-assets',
@@ -73,9 +75,49 @@ const defaultTasks = [
 
 const readJson = (filePath) => JSON.parse(fs.readFileSync(filePath, 'utf-8'))
 
+const resolvePythonCommand = (settings) => {
+  const configuredPython = (settings.pythonExePath || '').trim()
+  if (configuredPython) {
+    return { command: configuredPython, args: [] }
+  }
+
+  const condaPrefix = process.env.CONDA_PREFIX || ''
+  if (condaPrefix) {
+    const candidate = path.join(condaPrefix, process.platform === 'win32' ? 'python.exe' : 'bin/python')
+    if (fs.existsSync(candidate)) {
+      return { command: candidate, args: [] }
+    }
+  }
+
+  if (settings.condaEnv && settings.condaExePath) {
+    const condaRoot = path.dirname(path.dirname(settings.condaExePath))
+    const candidate = path.join(
+      condaRoot,
+      'envs',
+      settings.condaEnv,
+      process.platform === 'win32' ? 'python.exe' : 'bin/python',
+    )
+    if (fs.existsSync(candidate)) {
+      return { command: candidate, args: [] }
+    }
+  }
+
+  if (settings.condaExePath && settings.condaEnv) {
+    return { command: settings.condaExePath, args: ['run', '-n', settings.condaEnv, 'python'] }
+  }
+
+  return { command: 'python', args: [] }
+}
+
 const ensureSettings = () => {
   if (!fs.existsSync(settingsPath)) {
     fs.writeFileSync(settingsPath, JSON.stringify(defaultSettings, null, 2), 'utf-8')
+  }
+}
+
+const ensureConversationsStore = () => {
+  if (!fs.existsSync(conversationsPath)) {
+    fs.writeFileSync(conversationsPath, JSON.stringify({ conversations: [] }, null, 2), 'utf-8')
   }
 }
 
@@ -85,6 +127,634 @@ const ensureDirectories = () => {
 }
 
 const readSettings = () => ({ ...defaultSettings, ...readJson(settingsPath) })
+
+const readConversationsStore = () => {
+  ensureConversationsStore()
+  const payload = readJson(conversationsPath)
+  return Array.isArray(payload?.conversations) ? payload : { conversations: [] }
+}
+
+const writeConversationsStore = (store) => {
+  fs.writeFileSync(conversationsPath, JSON.stringify(store, null, 2), 'utf-8')
+}
+
+const toConversationSummary = (conversation) => ({
+  id: conversation.id,
+  title: conversation.title,
+  artifactDir: conversation.artifactDir,
+  paperTitle: conversation.paperTitle,
+  updatedAt: conversation.updatedAt,
+  messageCount: Array.isArray(conversation.messages) ? conversation.messages.length : 0,
+})
+
+const resolveConversationTitle = ({ userText, paperTitle }) => {
+  const base = String(userText || '').trim().replace(/\s+/g, ' ')
+  if (base) {
+    return base.length > 36 ? `${base.slice(0, 36)}...` : base
+  }
+  return paperTitle ? `${paperTitle} 对话` : '新会话'
+}
+
+const createConversationRecord = ({ artifactDir, paperTitle, title }) => {
+  const now = new Date().toISOString()
+  return {
+    id: `conv-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    title: title || resolveConversationTitle({ paperTitle }),
+    artifactDir: artifactDir || '',
+    paperTitle: paperTitle || '',
+    updatedAt: now,
+    messages: [],
+  }
+}
+
+const getConversationRecord = (conversationId) => {
+  const store = readConversationsStore()
+  const conversation = store.conversations.find((item) => item.id === conversationId)
+  return conversation ? { store, conversation } : { store, conversation: null }
+}
+
+const upsertConversationRecord = ({ conversationId, artifactDir, paperTitle, title }) => {
+  const store = readConversationsStore()
+  let conversation = store.conversations.find((item) => item.id === conversationId)
+
+  if (!conversation) {
+    conversation = createConversationRecord({ artifactDir, paperTitle, title })
+    if (conversationId) {
+      conversation.id = conversationId
+    }
+    store.conversations.unshift(conversation)
+  }
+
+  if (artifactDir) {
+    conversation.artifactDir = artifactDir
+  }
+  if (paperTitle) {
+    conversation.paperTitle = paperTitle
+  }
+  if (title) {
+    conversation.title = title
+  }
+  conversation.updatedAt = new Date().toISOString()
+  writeConversationsStore(store)
+  return conversation
+}
+
+const appendConversationMessage = ({ conversationId, artifactDir, paperTitle, title, message }) => {
+  const conversation = upsertConversationRecord({ conversationId, artifactDir, paperTitle, title })
+  conversation.messages.push(message)
+  conversation.updatedAt = new Date().toISOString()
+  if (!conversation.title || conversation.title === '新会话') {
+    conversation.title = resolveConversationTitle({ userText: message.role === 'user' ? message.content : '', paperTitle })
+  }
+  const store = readConversationsStore()
+  const index = store.conversations.findIndex((item) => item.id === conversation.id)
+  if (index >= 0) {
+    store.conversations[index] = conversation
+    const [updated] = store.conversations.splice(index, 1)
+    store.conversations.unshift(updated)
+  } else {
+    store.conversations.unshift(conversation)
+  }
+  writeConversationsStore(store)
+  return conversation
+}
+
+const updateConversationMessage = ({ conversationId, messageId, updater }) => {
+  const store = readConversationsStore()
+  const conversationIndex = store.conversations.findIndex((item) => item.id === conversationId)
+  if (conversationIndex < 0) {
+    return null
+  }
+  const conversation = store.conversations[conversationIndex]
+  const messageIndex = conversation.messages.findIndex((item) => item.id === messageId)
+  if (messageIndex < 0) {
+    return null
+  }
+  conversation.messages[messageIndex] = updater(conversation.messages[messageIndex])
+  conversation.updatedAt = new Date().toISOString()
+  const [updated] = store.conversations.splice(conversationIndex, 1)
+  store.conversations.unshift(updated)
+  writeConversationsStore(store)
+  return updated.messages[messageIndex]
+}
+
+const buildChatCompletionCandidates = (apiBaseUrl, mode = 'chat') => {
+  const normalizedBase = String(apiBaseUrl || 'https://api.openai.com/v1').replace(/\/$/, '')
+  const hostNormalizedBase = normalizedBase.replace(/\/(chat\/completions|responses|completions)$/i, '')
+  const candidates = mode === 'responses'
+    ? [`${normalizedBase}/responses`, `${hostNormalizedBase}/responses`]
+    : [
+        `${normalizedBase}/chat/completions`,
+        `${normalizedBase}/completions`,
+        `${hostNormalizedBase}/chat/completions`,
+      ]
+
+  if (!/\/v1$/i.test(normalizedBase)) {
+    if (mode === 'responses') {
+      candidates.push(`${normalizedBase}/v1/responses`)
+    } else {
+      candidates.push(`${normalizedBase}/v1/chat/completions`)
+    }
+  }
+
+  return [...new Set(candidates)]
+}
+
+const extractResponseText = (payload) => {
+  if (typeof payload?.output_text === 'string' && payload.output_text.trim()) {
+    return payload.output_text.trim()
+  }
+
+  if (typeof payload?.response === 'string' && payload.response.trim()) {
+    return payload.response.trim()
+  }
+
+  if (typeof payload?.text === 'string' && payload.text.trim()) {
+    return payload.text.trim()
+  }
+
+  if (typeof payload?.content === 'string' && payload.content.trim()) {
+    return payload.content.trim()
+  }
+
+  const choices = Array.isArray(payload?.choices) ? payload.choices : []
+  for (const choice of choices) {
+    if (typeof choice?.text === 'string' && choice.text.trim()) {
+      return choice.text.trim()
+    }
+
+    if (typeof choice?.message?.content === 'string' && choice.message.content.trim()) {
+      return choice.message.content.trim()
+    }
+
+    const messageContent = choice?.message?.content
+    if (Array.isArray(messageContent)) {
+      for (const item of messageContent) {
+        if (typeof item?.text === 'string' && item.text.trim()) {
+          return item.text.trim()
+        }
+        if (typeof item?.content === 'string' && item.content.trim()) {
+          return item.content.trim()
+        }
+      }
+    }
+
+    const deltaContent = choice?.delta?.content
+    if (typeof deltaContent === 'string' && deltaContent.trim()) {
+      return deltaContent.trim()
+    }
+    if (Array.isArray(deltaContent)) {
+      for (const item of deltaContent) {
+        if (typeof item?.text === 'string' && item.text.trim()) {
+          return item.text.trim()
+        }
+      }
+    }
+  }
+
+  const output = Array.isArray(payload?.output) ? payload.output : []
+  for (const item of output) {
+    const content = Array.isArray(item?.content) ? item.content : []
+    for (const block of content) {
+      if (typeof block?.text === 'string' && block.text.trim()) {
+        return block.text.trim()
+      }
+      if (typeof block?.output_text === 'string' && block.output_text.trim()) {
+        return block.output_text.trim()
+      }
+    }
+  }
+
+  const candidates = [payload?.data, payload?.result]
+  for (const candidate of candidates) {
+    if (typeof candidate === 'string' && candidate.trim()) {
+      return candidate.trim()
+    }
+
+    if (Array.isArray(candidate)) {
+      for (const item of candidate) {
+        if (typeof item?.text === 'string' && item.text.trim()) {
+          return item.text.trim()
+        }
+      }
+    }
+  }
+
+  return ''
+}
+
+const summarizePayload = (payload) => {
+  try {
+    const summary = JSON.stringify(payload)
+    return summary.length > 240 ? `${summary.slice(0, 240)}...` : summary
+  } catch {
+    return ''
+  }
+}
+
+const buildRequestBody = ({ settings, systemPrompt, userPrompt, messages, temperature, maxTokens }) => {
+  const normalizedMessages = Array.isArray(messages) && messages.length
+    ? messages
+    : [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt },
+      ]
+
+  if (settings.openaiApiMode === 'responses') {
+    return {
+      model: settings.model,
+      input: normalizedMessages,
+      ...(typeof temperature === 'number' ? { temperature } : {}),
+      ...(typeof maxTokens === 'number' ? { max_output_tokens: maxTokens } : {}),
+    }
+  }
+
+  return {
+    model: settings.model,
+    ...(typeof temperature === 'number' ? { temperature } : {}),
+    ...(typeof maxTokens === 'number' ? { max_tokens: maxTokens } : {}),
+    messages: normalizedMessages,
+  }
+}
+
+const parseModelReply = (settings, payload) => {
+  const extracted = extractResponseText(payload)
+  if (extracted) {
+    return extracted
+  }
+
+  try {
+    const serialized = JSON.stringify(payload)
+    if (serialized && serialized !== '{}' && serialized !== 'null') {
+      return `模型返回了未识别的响应格式：${serialized.slice(0, 1200)}`
+    }
+  } catch {
+    // ignore serialization failure
+  }
+
+  if (settings.openaiApiMode === 'responses') {
+    return '模型未返回内容。'
+  }
+
+  return '模型未返回内容。'
+}
+
+const createStreamingRequestBody = ({ settings, systemPrompt, userPrompt, messages, temperature, maxTokens }) => {
+  const body = buildRequestBody({ settings, systemPrompt, userPrompt, messages, temperature, maxTokens })
+  return {
+    ...body,
+    stream: true,
+  }
+}
+
+const extractStreamDelta = (payload) => {
+  if (!payload || typeof payload !== 'object') {
+    return ''
+  }
+
+  if (typeof payload.delta === 'string' && payload.delta) {
+    return payload.delta
+  }
+
+  const choices = Array.isArray(payload.choices) ? payload.choices : []
+  for (const choice of choices) {
+    if (typeof choice?.delta?.content === 'string' && choice.delta.content) {
+      return choice.delta.content
+    }
+
+    if (Array.isArray(choice?.delta?.content)) {
+      const joined = choice.delta.content
+        .map((item) => {
+          if (typeof item?.text === 'string') {
+            return item.text
+          }
+          if (typeof item?.content === 'string') {
+            return item.content
+          }
+          return ''
+        })
+        .join('')
+      if (joined) {
+        return joined
+      }
+    }
+  }
+
+  if (typeof payload.output_text === 'string' && payload.output_text) {
+    return payload.output_text
+  }
+
+  const output = Array.isArray(payload.output) ? payload.output : []
+  for (const item of output) {
+    const content = Array.isArray(item?.content) ? item.content : []
+    for (const block of content) {
+      if (typeof block?.text === 'string' && block.text) {
+        return block.text
+      }
+      if (typeof block?.output_text === 'string' && block.output_text) {
+        return block.output_text
+      }
+    }
+  }
+
+  if (typeof payload?.text === 'string' && payload.text) {
+    return payload.text
+  }
+
+  return ''
+}
+
+const writeJsonLine = (res, payload) => {
+  res.write(`${JSON.stringify(payload)}\n`)
+}
+
+const writeProgressEvent = (res, stage, message) => {
+  writeJsonLine(res, {
+    type: 'delta',
+    delta: '',
+    answer: message,
+    stage,
+  })
+}
+
+const postChatCompletionStream = async (settings, body, contextLabel) => {
+  const endpoints = buildChatCompletionCandidates(settings.apiBaseUrl, settings.openaiApiMode)
+  let lastDetail = ''
+
+  for (const endpoint of endpoints) {
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${settings.apiKey}`,
+      },
+      body: JSON.stringify(body),
+    })
+
+    if (response.ok && response.body) {
+      return response
+    }
+
+    const detail = await response.text()
+    lastDetail = detail
+
+    if (response.status !== 404) {
+      throw new Error(`${contextLabel} failed: ${response.status} ${detail}`)
+    }
+  }
+
+  throw new Error(
+    `${contextLabel} failed: 404 endpoint not found in ${settings.openaiApiMode} mode. Tried: ${endpoints.join(', ')}. ` +
+    `Check apiBaseUrl and provider-specific path. Last response: ${lastDetail || 'empty response'}`,
+  )
+}
+
+const pipeModelStream = async ({ response, res, meta, conversationId, assistantMessageId }) => {
+  const decoder = new TextDecoder('utf-8')
+  let buffer = ''
+  let accumulatedText = ''
+
+  const persistAssistantMessage = (updater) => {
+    if (!conversationId || !assistantMessageId) {
+      return
+    }
+
+    updateConversationMessage({
+      conversationId,
+      messageId: assistantMessageId,
+      updater,
+    })
+  }
+
+  writeJsonLine(res, {
+    type: 'meta',
+    ...meta,
+  })
+
+  persistAssistantMessage((message) => ({
+    ...message,
+    citations: meta.citations ?? message.citations,
+    mode: meta.mode ?? message.mode,
+  }))
+
+  for await (const chunk of response.body) {
+    buffer += decoder.decode(chunk, { stream: true })
+    const lines = buffer.split(/\r?\n/)
+    buffer = lines.pop() ?? ''
+
+    for (const rawLine of lines) {
+      const line = rawLine.trim()
+      if (!line || !line.startsWith('data:')) {
+        continue
+      }
+
+      const data = line.slice(5).trim()
+      if (!data) {
+        continue
+      }
+
+      if (data === '[DONE]') {
+        persistAssistantMessage((message) => ({
+          ...message,
+          content: accumulatedText,
+          status: 'done',
+          citations: meta.citations ?? message.citations,
+          mode: meta.mode ?? message.mode,
+        }))
+        writeJsonLine(res, {
+          type: 'done',
+          answer: accumulatedText,
+          citations: meta.citations,
+          mode: meta.mode,
+          paperTitle: meta.paperTitle,
+          retrievedChunks: meta.retrievedChunks,
+          sections: meta.sections,
+        })
+        return
+      }
+
+      try {
+        const payload = JSON.parse(data)
+        const delta = extractStreamDelta(payload)
+        if (!delta) {
+          continue
+        }
+
+        accumulatedText += delta
+        persistAssistantMessage((message) => ({
+          ...message,
+          content: accumulatedText,
+          status: 'streaming',
+          citations: meta.citations ?? message.citations,
+          mode: meta.mode ?? message.mode,
+        }))
+        writeJsonLine(res, {
+          type: 'delta',
+          delta,
+          answer: accumulatedText,
+        })
+      } catch {
+        continue
+      }
+    }
+  }
+
+  if (buffer.trim().startsWith('data:')) {
+    const data = buffer.trim().slice(5).trim()
+    if (data && data !== '[DONE]') {
+      try {
+        const payload = JSON.parse(data)
+        const delta = extractStreamDelta(payload)
+        if (delta) {
+          accumulatedText += delta
+          persistAssistantMessage((message) => ({
+            ...message,
+            content: accumulatedText,
+            status: 'streaming',
+            citations: meta.citations ?? message.citations,
+            mode: meta.mode ?? message.mode,
+          }))
+          writeJsonLine(res, {
+            type: 'delta',
+            delta,
+            answer: accumulatedText,
+          })
+        }
+      } catch {
+        // ignore trailing parse errors for incomplete upstream events
+      }
+    }
+  }
+
+  persistAssistantMessage((message) => ({
+    ...message,
+    content: accumulatedText,
+    status: 'done',
+    citations: meta.citations ?? message.citations,
+    mode: meta.mode ?? message.mode,
+  }))
+  writeJsonLine(res, {
+    type: 'done',
+    answer: accumulatedText,
+    citations: meta.citations,
+    mode: meta.mode,
+    paperTitle: meta.paperTitle,
+    retrievedChunks: meta.retrievedChunks,
+    sections: meta.sections,
+  })
+}
+
+const buildConversationMessages = ({ systemPrompt, contextPrompt, history, userPrompt }) => {
+  const messages = [{ role: 'system', content: systemPrompt }]
+
+  if (contextPrompt) {
+    messages.push({ role: 'system', content: contextPrompt })
+  }
+
+  if (Array.isArray(history) && history.length) {
+    for (const item of history) {
+      if (!item || (item.role !== 'user' && item.role !== 'assistant')) {
+        continue
+      }
+      const content = typeof item.content === 'string' ? item.content.trim() : ''
+      if (!content) {
+        continue
+      }
+      messages.push({ role: item.role, content })
+    }
+  }
+
+  messages.push({ role: 'user', content: userPrompt })
+  return messages
+}
+
+const buildContentBlocks = ({ text, imageEvidence = [] }) => {
+  const blocks = []
+
+  if (text) {
+    blocks.push({ type: 'text', text })
+  }
+
+  for (const item of imageEvidence) {
+    const imageUrl = item?.remoteUrl || item?.src
+    if (!imageUrl) {
+      continue
+    }
+
+    blocks.push({
+      type: 'image_url',
+      image_url: {
+        url: imageUrl,
+      },
+    })
+  }
+
+  return blocks.length ? blocks : text
+}
+
+const buildConversationMessagesWithImages = ({ systemPrompt, contextPrompt, history, userPrompt, imageEvidence = [] }) => {
+  const messages = [{ role: 'system', content: systemPrompt }]
+
+  if (contextPrompt) {
+    messages.push({ role: 'system', content: contextPrompt })
+  }
+
+  if (Array.isArray(history) && history.length) {
+    for (const item of history) {
+      if (!item || (item.role !== 'user' && item.role !== 'assistant')) {
+        continue
+      }
+
+      const content = typeof item.content === 'string' ? item.content.trim() : ''
+      if (!content) {
+        continue
+      }
+
+      messages.push({ role: item.role, content })
+    }
+  }
+
+  messages.push({
+    role: 'user',
+    content: buildContentBlocks({ text: userPrompt, imageEvidence }),
+  })
+
+  return messages
+}
+
+const postChatCompletion = async (settings, body, contextLabel) => {
+  const endpoints = buildChatCompletionCandidates(settings.apiBaseUrl, settings.openaiApiMode)
+  let lastStatus = 0
+  let lastDetail = ''
+
+  for (const endpoint of endpoints) {
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${settings.apiKey}`,
+      },
+      body: JSON.stringify(body),
+    })
+
+    if (response.ok) {
+      return response.json()
+    }
+
+    const detail = await response.text()
+    lastStatus = response.status
+    lastDetail = detail
+
+    if (response.status !== 404) {
+      throw new Error(`${contextLabel} failed: ${response.status} ${detail}`)
+    }
+  }
+
+  throw new Error(
+    `${contextLabel} failed: 404 endpoint not found in ${settings.openaiApiMode} mode. Tried: ${endpoints.join(', ')}. ` +
+    `Check apiBaseUrl and provider-specific path. Last response: ${lastDetail || 'empty response'}`,
+  )
+}
 
 const listCondaEnvironments = async () => {
   const settings = readSettings()
@@ -211,6 +881,86 @@ const getDocumentMarkdownPath = (artifactDir) => {
 
 const getRagDir = (artifactDir) => path.join(artifactDir, 'rag')
 
+const getGithubManifestPath = (artifactDir) => path.join(artifactDir, 'github_manifest.json')
+
+const readGithubManifest = (artifactDir) => {
+  const manifestPath = getGithubManifestPath(artifactDir)
+  if (!fs.existsSync(manifestPath)) {
+    return []
+  }
+
+  try {
+    const payload = readJson(manifestPath)
+    return Array.isArray(payload) ? payload : []
+  } catch {
+    return []
+  }
+}
+
+const normalizePathForMatch = (value) => String(value || '').replace(/\\/g, '/').replace(/^\//, '')
+
+const resolveFigureRemoteUrl = ({ artifactDir, src }) => {
+  if (!src) {
+    return ''
+  }
+
+  const manifest = readGithubManifest(artifactDir)
+  const normalizedSrc = normalizePathForMatch(src)
+  const match = manifest.find((item) => {
+    const localPath = normalizePathForMatch(item?.localPath)
+    const remotePath = normalizePathForMatch(item?.remotePath)
+    return localPath.endsWith(normalizedSrc) || remotePath.endsWith(normalizedSrc)
+  })
+
+  return typeof match?.remoteUrl === 'string' ? match.remoteUrl : ''
+}
+
+const enrichFiguresWithRemoteUrls = ({ artifactDir, figures }) => figures.map((figure) => ({
+  ...figure,
+  remoteUrl: figure.remoteUrl || resolveFigureRemoteUrl({ artifactDir, src: figure.src }),
+}))
+
+const collectImageEvidence = ({ artifactDir, document, question, retrievedChunks = [], limit = 3 }) => {
+  const normalizedQuestion = String(question || '').toLowerCase()
+  const figures = enrichFiguresWithRemoteUrls({ artifactDir, figures: document.figures || [] })
+  const pagesFromChunks = new Set(
+    retrievedChunks
+      .flatMap((chunk) => Array.isArray(chunk?.pages) && chunk.pages.length ? chunk.pages : [chunk?.page])
+      .filter((value) => Number.isFinite(value)),
+  )
+
+  return figures
+    .map((figure) => {
+      let score = 0
+      if (pagesFromChunks.has(figure.page)) {
+        score += 3
+      }
+
+      if (figure.caption && normalizedQuestion) {
+        const caption = figure.caption.toLowerCase()
+        const tokens = normalizedQuestion.split(/\s+/).filter(Boolean)
+        score += tokens.reduce((sum, token) => sum + (caption.includes(token) ? 1 : 0), 0)
+      }
+
+      if (/图|figure|table|表|架构|流程|示意/.test(normalizedQuestion)) {
+        score += 2
+      }
+
+      return {
+        id: figure.id,
+        page: figure.page,
+        caption: figure.caption,
+        src: figure.src,
+        remoteUrl: figure.remoteUrl,
+        score,
+      }
+    })
+    .filter((item) => item.remoteUrl || item.src)
+    .sort((left, right) => right.score - left.score || left.page - right.page)
+    .slice(0, Math.max(limit, 0))
+    .map(({ score, ...item }) => item)
+}
+
 const getRagFiles = (artifactDir) => ({
   ragDir: getRagDir(artifactDir),
   chunksPath: path.join(getRagDir(artifactDir), 'chunks.jsonl'),
@@ -243,20 +993,11 @@ const runPythonTask = ({ settings, scriptPath, scriptArgs, onStdout, onStderr })
   const env = {
     ...process.env,
     PYTHONIOENCODING: 'utf-8',
+    PYTHONUTF8: '1',
   }
 
-  if (settings.pythonExePath) {
-    return spawn(settings.pythonExePath, [scriptPath, ...scriptArgs], { cwd: rootDir, env })
-  }
-
-  if (settings.condaExePath && settings.condaEnv) {
-    return spawn(settings.condaExePath, ['run', '-n', settings.condaEnv, 'python', scriptPath, ...scriptArgs], {
-      cwd: rootDir,
-      env,
-    })
-  }
-
-  return spawn('python', [scriptPath, ...scriptArgs], { cwd: rootDir, env })
+  const pythonCommand = resolvePythonCommand(settings)
+  return spawn(pythonCommand.command, [...pythonCommand.args, scriptPath, ...scriptArgs], { cwd: rootDir, env })
 }
 
 const buildRagIndex = (artifactDir, { taskId, settings }) => new Promise((resolve, reject) => {
@@ -363,23 +1104,31 @@ const retrieveRagChunks = (artifactDir, { question, topK, settings }) => new Pro
 
   child.on('error', (error) => reject(error))
   child.on('close', (code) => {
-    if (code !== 0) {
-      reject(new Error(stderr.trim() || `rag query failed with exit code ${code ?? 'unknown'}`))
-      return
-    }
-
     const lastJsonLine = stdout
       .split(/\r?\n/)
       .map((line) => line.trim())
       .filter((line) => line.startsWith('{') && line.endsWith('}'))
       .at(-1)
 
-    if (!lastJsonLine) {
-      reject(new Error('rag query did not return JSON payload'))
+    if (lastJsonLine) {
+      try {
+        resolve(JSON.parse(lastJsonLine))
+        return
+      } catch (error) {
+        reject(new Error(`rag query returned invalid JSON: ${error instanceof Error ? error.message : 'unknown error'}`))
+        return
+      }
+    }
+
+    const stderrText = stderr.trim()
+    const stdoutText = stdout.trim()
+
+    if (code !== 0) {
+      reject(new Error(stderrText || stdoutText || `rag query failed with exit code ${code ?? 'unknown'}`))
       return
     }
 
-    resolve(JSON.parse(lastJsonLine))
+    reject(new Error(stderrText || stdoutText || 'rag query did not return JSON payload'))
   })
 })
 
@@ -594,18 +1343,8 @@ const startImportTask = (filePath, res) => {
   ]
 
   const runWorker = () => {
-    if (settings.pythonExePath) {
-      return spawn(settings.pythonExePath, workerArgs, { cwd: rootDir, env })
-    }
-
-    if (settings.condaExePath && settings.condaEnv) {
-      return spawn(settings.condaExePath, ['run', '-n', settings.condaEnv, 'python', ...workerArgs], {
-        cwd: rootDir,
-        env,
-      })
-    }
-
-    return spawn('python', workerArgs, { cwd: rootDir, env })
+    const pythonCommand = resolvePythonCommand(settings)
+    return spawn(pythonCommand.command, [...pythonCommand.args, ...workerArgs], { cwd: rootDir, env })
   }
 
   let worker
@@ -836,7 +1575,16 @@ const buildDocument = (artifactDir) => {
       .filter((anchor) => anchor.text),
   )
 
-  return { pages, outline, figures, anchors, pageMetas, assetBasePath, paperTitle: baseName, markdown }
+  return {
+    pages,
+    outline,
+    figures: enrichFiguresWithRemoteUrls({ artifactDir: resolvedDocumentDir, figures }),
+    anchors,
+    pageMetas,
+    assetBasePath,
+    paperTitle: baseName,
+    markdown,
+  }
 }
 
 const buildChatContext = ({ question, page, anchorId, artifactDir }) => {
@@ -887,20 +1635,23 @@ const buildChatContext = ({ question, page, anchorId, artifactDir }) => {
 }
 
 const buildRagPrompt = ({ paperTitle, question, chunks }) => {
-  const citations = chunks.map((chunk) => {
+  const limitedChunks = Array.isArray(chunks) ? chunks.slice(0, 4) : []
+  const citations = limitedChunks.map((chunk) => {
     const sectionPart = chunk.sectionPath ? ` ${chunk.sectionPath}` : ''
     return `P.${chunk.page}${sectionPart}`
   })
 
-  const context = chunks
+  const context = limitedChunks
     .map((chunk, index) => {
       const sectionText = chunk.sectionPath ? `章节: ${chunk.sectionPath}` : '章节: 未知'
+      const chunkText = String(chunk.text || '').trim()
+      const compactText = chunkText.length > 900 ? `${chunkText.slice(0, 900)}…` : chunkText
       return [
         `片段 ${index + 1}`,
         `页码: ${chunk.page}`,
         sectionText,
         `相关度: ${typeof chunk.score === 'number' ? chunk.score.toFixed(4) : 'n/a'}`,
-        chunk.text,
+        compactText,
       ].join('\n')
     })
     .join('\n\n')
@@ -911,13 +1662,347 @@ const buildRagPrompt = ({ paperTitle, question, chunks }) => {
     prompt: [
       `论文标题: ${paperTitle}`,
       `用户问题: ${question}`,
-      '以下内容为从当前论文检索得到的证据片段。你必须只基于这些证据回答；若证据不足，直接说明。',
+      '以下内容为从整篇论文检索得到的证据片段，可能跨越多个页面、章节、图表说明与图片标题。你必须只基于这些证据回答；若证据不足，直接说明。',
+      '回答要求：先判断问题是在问整体论文、局部页面还是图表/图片；若是整体问题，优先综合多段证据后再给结构化答案；若证据中包含图像标题、表格说明或图号，需要把它们并入分析。',
       context,
     ].join('\n\n'),
   }
 }
 
-const requestChatCompletion = async ({ question, page, anchorId, artifactDir, useRag, topK }) => {
+const planAgentSubqueries = ({ question, paperTitle, intent }) => {
+  const normalizedQuestion = String(question || '').trim()
+  const plans = []
+
+  if (intent.isWholePaper || /架构|结构|框架|流程|method|architecture/i.test(normalizedQuestion)) {
+    plans.push(`论文 ${paperTitle} 的核心任务与问题定义`)
+    plans.push(`论文 ${paperTitle} 的整体架构与主要模块`)
+    plans.push(`论文 ${paperTitle} 的关键方法机制与训练推理流程`)
+  } else if (/实验|效果|结果|消融|对比|experiment|ablation/i.test(normalizedQuestion)) {
+    plans.push(`论文 ${paperTitle} 的主实验设置与评价指标`)
+    plans.push(`论文 ${paperTitle} 的实验结果与对比结论`)
+    plans.push(`论文 ${paperTitle} 的消融实验与主要发现`)
+  } else {
+    plans.push(normalizedQuestion)
+    plans.push(`论文 ${paperTitle} 中与“${normalizedQuestion}”最相关的方法说明`)
+    plans.push(`论文 ${paperTitle} 中与“${normalizedQuestion}”最相关的结论或证据`)
+  }
+
+  if (intent.wantsImage) {
+    plans.push(`论文 ${paperTitle} 中与“${normalizedQuestion}”对应的图表与图片说明`)
+  }
+
+  return [...new Set(plans)].slice(0, 4)
+}
+
+const buildAgentSubAnswerPrompt = ({ paperTitle, userQuestion, subquery, chunks }) => {
+  const citations = uniqueCitations(chunks.map((chunk) => {
+    const sectionPart = chunk.sectionPath ? ` ${chunk.sectionPath}` : ''
+    return `P.${chunk.page}${sectionPart}`
+  }))
+
+  const evidenceText = chunks
+    .slice(0, 3)
+    .map((chunk, index) => {
+      const sectionText = chunk.sectionPath ? `章节: ${chunk.sectionPath}` : '章节: 未知'
+      const chunkText = String(chunk.text || '').trim()
+      const compactText = chunkText.length > 700 ? `${chunkText.slice(0, 700)}…` : chunkText
+      return [
+        `证据 ${index + 1}`,
+        `页码: ${chunk.page}`,
+        sectionText,
+        compactText,
+      ].join('\n')
+    })
+    .join('\n\n')
+
+  return {
+    citations,
+    prompt: [
+      `论文标题: ${paperTitle}`,
+      `用户总问题: ${userQuestion}`,
+      `当前子任务: ${subquery}`,
+      '你只回答当前子任务，并提炼与总问题相关的事实，不要输出无关铺垫。',
+      '要求：只基于证据回答；证据不足时明确写“证据不足”。输出尽量简洁。',
+      `证据片段:\n${evidenceText}`,
+    ].join('\n\n'),
+  }
+}
+
+const buildAgentSynthesisPrompt = ({ paperTitle, question, subAnswers }) => {
+  const citations = uniqueCitations(subAnswers.flatMap((item) => item.citations || []))
+  const evidenceText = subAnswers
+    .map((item, index) => [
+      `子结果 ${index + 1}`,
+      `子任务: ${item.subquery}`,
+      `引用: ${(item.citations || []).join('；') || '无'}`,
+      item.answer || '证据不足',
+    ].join('\n'))
+    .join('\n\n')
+
+  return {
+    citations,
+    prompt: [
+      `论文标题: ${paperTitle}`,
+      `用户问题: ${question}`,
+      '下面是多个子任务的回答结果，请你综合、去重、纠正冲突，并输出最终答案。',
+      '要求：1) 只基于子结果；2) 优先结构化回答；3) 缺失信息明确写“论文中未充分说明”；4) 不要重复。',
+      `子结果集合:\n${evidenceText}`,
+    ].join('\n\n'),
+  }
+}
+
+const classifyQuestionIntent = (question) => {
+  const normalized = String(question || '').trim().toLowerCase()
+  const wholePaperSignals = [
+    '全文',
+    '整篇',
+    '整篇论文',
+    '总体',
+    '整体',
+    '架构',
+    '结构',
+    '框架',
+    '流程',
+    '架构分析',
+    '结构分析',
+    '论文架构',
+    '系统架构',
+    '整体架构',
+    '关键方法',
+    '方法机制',
+    '原理',
+    '实验',
+    '消融',
+    '对比',
+    '创新点',
+    '贡献',
+    '总结',
+    'summary',
+    'architecture',
+    'method',
+    'mechanism',
+    'experiment',
+    'ablation',
+    'contribution',
+  ]
+  const imageSignals = [
+    '图片',
+    '图',
+    'figure',
+    'fig.',
+    'fig ',
+    'table',
+    '表',
+    '示意图',
+    '可视化',
+    '流程图',
+    '架构图',
+  ]
+  const pageSignals = [
+    '当前页',
+    '本页',
+    '这一页',
+    '该页',
+    '这一段',
+    '这里',
+  ]
+
+  const isWholePaper = wholePaperSignals.some((signal) => normalized.includes(signal))
+  const wantsImage = imageSignals.some((signal) => normalized.includes(signal))
+  const isPageScoped = pageSignals.some((signal) => normalized.includes(signal)) && !isWholePaper
+
+  return {
+    isWholePaper,
+    wantsImage,
+    isPageScoped,
+    recommendedMode: isPageScoped ? 'page' : 'rag',
+  }
+}
+
+const buildQuestionPlannerPrompt = ({ mode, intent }) => {
+  if (mode === 'rag') {
+    return [
+      '你是一个论文阅读助手。你要先做隐式规划，再输出最终答案。',
+      '规划要求：',
+      '- 判断问题是否要求整篇论文级别的综合分析。',
+      '- 优先整合跨页证据，而不是只复述单页内容。',
+      '- 若问题涉及架构、方法、实验、创新点，默认视为全文问题。',
+      '- 若证据中出现图、表、图片标题、图注、表注，应将其视为有效证据并纳入分析。',
+      '- 若证据不足，明确写出缺失点，不要编造。',
+      `当前路由判断: wholePaper=${intent.isWholePaper}; wantsImage=${intent.wantsImage}; pageScoped=${intent.isPageScoped}`,
+    ].join('\n')
+  }
+
+  return [
+    '你是一个论文阅读助手。当前问题按页面局部问答处理。',
+    '你必须优先基于当前页正文和锚点回答，并明确说明这是当前页范围内的结论。',
+    '如果用户实际上在问整篇论文层面的架构、方法或实验，请明确说明当前页证据不足，并建议切换到全文分析。',
+  ].join('\n')
+}
+
+const uniqueCitations = (values) => [...new Set(values.filter(Boolean))]
+
+const createSummarySectionConfig = (paperTitle) => ([
+  {
+    title: '论文一句话概述',
+    coverage: 'good',
+    question: `请概括论文 ${paperTitle} 的研究问题、方法和结果亮点`,
+  },
+  {
+    title: '论文的核心贡献',
+    coverage: 'good',
+    question: `请提取论文 ${paperTitle} 的核心贡献、创新点、解决的问题与收益`,
+  },
+  {
+    title: '整体架构',
+    coverage: 'good',
+    question: `请说明论文 ${paperTitle} 的整体架构、主要模块、各模块作用与输入输出`,
+  },
+  {
+    title: '关键方法机制',
+    coverage: 'good',
+    question: `请解释论文 ${paperTitle} 的关键模块、方法步骤、设计动机和实现机制`,
+  },
+  {
+    title: '实验结果与主要发现',
+    coverage: 'good',
+    question: `请总结论文 ${paperTitle} 的主实验、消融实验、主要发现和总体结论`,
+  },
+])
+
+const buildSummaryPrompt = ({ paperTitle, sections, chunks }) => {
+  const citations = uniqueCitations(chunks.map((chunk) => {
+    const sectionPart = chunk.sectionPath ? ` ${chunk.sectionPath}` : ''
+    return `P.${chunk.page}${sectionPart}`
+  }))
+
+  const evidenceText = chunks
+    .map((chunk, index) => {
+      const sectionText = chunk.sectionPath ? `章节: ${chunk.sectionPath}` : '章节: 未知'
+      const blockText = Array.isArray(chunk.blockTypes) && chunk.blockTypes.length
+        ? `块类型: ${chunk.blockTypes.join(', ')}`
+        : '块类型: 未知'
+      return [
+        `证据 ${index + 1}`,
+        `页码: ${chunk.page}`,
+        sectionText,
+        blockText,
+        chunk.text,
+      ].join('\n')
+    })
+    .join('\n\n')
+
+  const sectionGuide = sections
+    .map((section) => `- ${section.title}: ${section.question}`)
+    .join('\n')
+
+  return {
+    citations,
+    prompt: [
+      `论文标题: ${paperTitle}`,
+      '你要输出一份论文深度解析，严格遵循固定 Markdown 结构，不能改标题，不能省略章节。',
+      '输出格式必须是：',
+      '# 《论文标题》的深度解析',
+      '## 1. 论文一句话概述',
+      '## 2. 论文的核心贡献',
+      '### 贡献 1：...',
+      '- 解决问题：',
+      '- 创新点：',
+      '- 核心机制：',
+      '- 带来收益：',
+      '## 3. 整体架构',
+      '- 模块 1：',
+      '- 模块 2：',
+      '- 模块 3：',
+      '## 4. 关键方法机制',
+      '### 模块 A 是如何工作的？',
+      '1. ...',
+      '2. ...',
+      '3. ...',
+      '### 模块 B 解决了什么问题，如何实现？',
+      '1. ...',
+      '2. ...',
+      '3. ...',
+      '## 5. 实验结果与主要发现',
+      '### 主实验',
+      '### 消融实验',
+      '### 总体结论',
+      '要求：只基于给定证据回答；证据不足时明确写“论文中未充分说明”；不要编造。',
+      `固定 section 任务:\n${sectionGuide}`,
+      `证据片段:\n${evidenceText}`,
+    ].join('\n\n'),
+  }
+}
+
+const buildSummaryConversationPrompt = ({ paperTitle, sections, chunks, userPrompt }) => {
+  const summary = buildSummaryPrompt({ paperTitle, sections, chunks })
+  return {
+    citations: summary.citations,
+    contextPrompt: summary.prompt,
+    userPrompt: userPrompt || `请总结论文《${paperTitle}》，并按固定结构输出。`,
+  }
+}
+
+const buildSummaryRetrievalQueries = (paperTitle) => ([
+  `paper ${paperTitle} abstract main idea contributions`,
+  `paper ${paperTitle} method architecture module design`,
+  `paper ${paperTitle} experiments results ablation limitations`,
+])
+
+const collectSummaryEvidence = async ({ artifactDir, settings, paperTitle }) => {
+  const ragStatus = getRagStatus(artifactDir)
+  const queries = buildSummaryRetrievalQueries(paperTitle)
+  const mergedChunks = []
+  const seenChunkIds = new Set()
+
+  if (ragStatus.indexed) {
+    for (const query of queries) {
+      const retrieval = await retrieveRagChunks(artifactDir, {
+        question: query,
+        topK: 6,
+        settings,
+      })
+
+      for (const chunk of Array.isArray(retrieval.chunks) ? retrieval.chunks : []) {
+        const dedupeKey = chunk.id || `${chunk.page}-${chunk.sectionPath || ''}-${chunk.text?.slice(0, 80) || ''}`
+        if (seenChunkIds.has(dedupeKey)) {
+          continue
+        }
+        seenChunkIds.add(dedupeKey)
+        mergedChunks.push(chunk)
+      }
+    }
+  }
+
+  if (mergedChunks.length) {
+    return mergedChunks
+  }
+
+  const document = buildDocument(artifactDir)
+  return document.pages
+    .flatMap((page, pageIndex) => page.map((block, blockIndex) => {
+      let text = ''
+      if (block.type === 'title') {
+        text = textFromItems(block.content?.title_content)
+      } else if (block.type === 'paragraph') {
+        text = textFromItems(block.content?.paragraph_content)
+      } else if (block.type === 'image') {
+        text = textFromItems(block.content?.image_caption)
+      }
+
+      return {
+        id: `fallback-${pageIndex}-${blockIndex}`,
+        text,
+        page: pageIndex + 1,
+        sectionPath: '',
+        blockTypes: [block.type],
+      }
+    }))
+    .filter((chunk) => chunk.text)
+    .slice(0, 32)
+}
+
+const requestPaperSummary = async ({ artifactDir, history = [], userPrompt }) => {
   const settings = readSettings()
   if (!settings.apiKey) {
     throw new Error('apiKey is not configured')
@@ -925,79 +2010,408 @@ const requestChatCompletion = async ({ question, page, anchorId, artifactDir, us
 
   const targetArtifactDir = artifactDir && fs.existsSync(artifactDir) ? artifactDir : resolveActiveDocumentDir()
   const document = buildDocument(targetArtifactDir)
+  const sections = createSummarySectionConfig(document.paperTitle)
+  const evidenceChunks = await collectSummaryEvidence({
+    artifactDir: targetArtifactDir,
+    settings,
+    paperTitle: document.paperTitle,
+  })
+  const { citations, contextPrompt, userPrompt: resolvedUserPrompt } = buildSummaryConversationPrompt({
+    paperTitle: document.paperTitle,
+    sections,
+    chunks: evidenceChunks,
+    userPrompt,
+  })
+
+  const payload = await postChatCompletion(settings, buildRequestBody({
+    settings,
+    systemPrompt: '你是论文深度解析助手。你必须先根据固定章节规划组织信息，再严格按给定 Markdown 模板输出。你只能基于证据回答，证据不足时必须明确写出“论文中未充分说明”。',
+    messages: buildConversationMessages({
+      systemPrompt: '你是论文深度解析助手。你必须先根据固定章节规划组织信息，再严格按给定 Markdown 模板输出。你只能基于证据回答，证据不足时必须明确写出“论文中未充分说明”。',
+      contextPrompt,
+      history,
+      userPrompt: resolvedUserPrompt,
+    }),
+    temperature: 0.2,
+  }), 'paper summary request')
+  return {
+    answer: parseModelReply(settings, payload),
+    paperTitle: document.paperTitle,
+    citations,
+    sections: sections.map((section) => ({
+      title: section.title,
+      coverage: section.coverage,
+    })),
+  }
+}
+
+const streamPaperSummary = async ({ artifactDir, history = [], userPrompt, res, conversationId, assistantMessageId }) => {
+  const settings = readSettings()
+  if (!settings.apiKey) {
+    throw new Error('apiKey is not configured')
+  }
+
+  writeProgressEvent(res, 'prepare', '正在整理论文证据与章节结构，请稍候...')
+
+  const targetArtifactDir = artifactDir && fs.existsSync(artifactDir) ? artifactDir : resolveActiveDocumentDir()
+  const document = buildDocument(targetArtifactDir)
+  const sections = createSummarySectionConfig(document.paperTitle)
+  const evidenceChunks = await collectSummaryEvidence({
+    artifactDir: targetArtifactDir,
+    settings,
+    paperTitle: document.paperTitle,
+  })
+  const { citations, contextPrompt, userPrompt: resolvedUserPrompt } = buildSummaryConversationPrompt({
+    paperTitle: document.paperTitle,
+    sections,
+    chunks: evidenceChunks,
+    userPrompt,
+  })
+
+  writeProgressEvent(res, 'model', '证据整理完成，正在连接模型生成总结...')
+
+  const response = await postChatCompletionStream(settings, createStreamingRequestBody({
+    settings,
+    systemPrompt: '你是论文深度解析助手。你必须先根据固定章节规划组织信息，再严格按给定 Markdown 模板输出。你只能基于证据回答，证据不足时必须明确写出“论文中未充分说明”。',
+    messages: buildConversationMessages({
+      systemPrompt: '你是论文深度解析助手。你必须先根据固定章节规划组织信息，再严格按给定 Markdown 模板输出。你只能基于证据回答，证据不足时必须明确写出“论文中未充分说明”。',
+      contextPrompt,
+      history,
+      userPrompt: resolvedUserPrompt,
+    }),
+    temperature: 0.2,
+  }), 'paper summary request')
+
+  await pipeModelStream({
+    response,
+    res,
+    conversationId,
+    assistantMessageId,
+    meta: {
+      paperTitle: document.paperTitle,
+      citations,
+      sections: sections.map((section) => ({
+        title: section.title,
+        coverage: section.coverage,
+      })),
+    },
+  })
+}
+
+const requestChatCompletion = async ({ question, page, anchorId, artifactDir, useRag, topK, history = [] }) => {
+  const settings = readSettings()
+  if (!settings.apiKey) {
+    throw new Error('apiKey is not configured')
+  }
+
+  const targetArtifactDir = artifactDir && fs.existsSync(artifactDir) ? artifactDir : resolveActiveDocumentDir()
+  const document = buildDocument(targetArtifactDir)
+  const intent = classifyQuestionIntent(question)
   let mode = 'page'
   let retrievedChunks = []
+  let imageEvidence = []
   let promptPayload
 
-  if (useRag) {
+  if (useRag !== false || intent.recommendedMode === 'rag') {
     const ragStatus = getRagStatus(targetArtifactDir)
-    if (!ragStatus.indexed) {
-      throw new Error(`RAG index is not ready for ${targetArtifactDir}`)
+    if (ragStatus.indexed) {
+      const plannerQueries = planAgentSubqueries({
+        question,
+        paperTitle: document.paperTitle,
+        intent,
+      })
+      const subAnswers = []
+      const mergedChunks = []
+      const seenChunkIds = new Set()
+
+      for (const subquery of plannerQueries) {
+        const retrieval = await retrieveRagChunks(targetArtifactDir, {
+          question: subquery,
+          topK: Math.min(Number(topK) || settings.ragTopK || 8, 4),
+          settings,
+        })
+        const chunks = Array.isArray(retrieval.chunks) ? retrieval.chunks.slice(0, 3) : []
+
+        for (const chunk of chunks) {
+          const dedupeKey = chunk.id || `${chunk.page}-${chunk.sectionPath || ''}-${chunk.text?.slice(0, 80) || ''}`
+          if (seenChunkIds.has(dedupeKey)) {
+            continue
+          }
+          seenChunkIds.add(dedupeKey)
+          mergedChunks.push(chunk)
+        }
+
+        if (!chunks.length) {
+          subAnswers.push({ subquery, answer: '证据不足', citations: [] })
+          continue
+        }
+
+        const subPrompt = buildAgentSubAnswerPrompt({
+          paperTitle: document.paperTitle,
+          userQuestion: question,
+          subquery,
+          chunks,
+        })
+        const subPayload = await postChatCompletion(settings, buildRequestBody({
+          settings,
+          messages: buildConversationMessages({
+            systemPrompt: '你是论文分析智能体的子任务执行器。你只能根据当前证据回答当前子任务。',
+            contextPrompt: subPrompt.prompt,
+            history: [],
+            userPrompt: `请完成子任务：${subquery}`,
+          }),
+          temperature: 0.1,
+          maxTokens: 320,
+        }), 'chat subtask request')
+
+        subAnswers.push({
+          subquery,
+          answer: parseModelReply(settings, subPayload),
+          citations: subPrompt.citations,
+        })
+      }
+
+      if (subAnswers.length) {
+        const synthesisPrompt = buildAgentSynthesisPrompt({
+          paperTitle: document.paperTitle,
+          question,
+          subAnswers,
+        })
+        promptPayload = {
+          paperTitle: document.paperTitle,
+          citations: synthesisPrompt.citations,
+          prompt: synthesisPrompt.prompt,
+        }
+        retrievedChunks = mergedChunks
+        mode = 'rag-agent'
+      }
     }
+  }
 
-    const retrieval = await retrieveRagChunks(targetArtifactDir, {
-      question,
-      topK,
-      settings,
-    })
-
-    retrievedChunks = Array.isArray(retrieval.chunks) ? retrieval.chunks : []
-    if (!retrievedChunks.length) {
-      throw new Error('RAG retrieval returned no chunks')
-    }
-
-    promptPayload = buildRagPrompt({
-      paperTitle: document.paperTitle,
-      question,
-      chunks: retrievedChunks,
-    })
-    mode = 'rag'
-  } else {
+  if (!promptPayload) {
     promptPayload = buildChatContext({ question, page, anchorId, artifactDir: targetArtifactDir })
   }
 
-  const { prompt, paperTitle, citations } = promptPayload
-  const endpoint = `${String(settings.apiBaseUrl || 'https://api.openai.com/v1').replace(/\/$/, '')}/chat/completions`
-  const response = await fetch(endpoint, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${settings.apiKey}`,
-    },
-    body: JSON.stringify({
-      model: settings.model,
-      temperature: 0.2,
-      messages: [
-        {
-          role: 'system',
-          content: mode === 'rag'
-            ? '你是一个论文阅读助手。你必须只基于给定检索证据回答，优先给出结构化总结，并明确指出证据对应的页码或章节。若上下文不足，直接说明证据不足，不要编造。'
-            : '你是一个论文阅读助手。你必须只基于给定页面与锚点上下文回答，优先给出结构化总结，并明确指出回答对应的是当前页内容。若上下文不足，直接说明证据不足，不要编造。',
-        },
-        {
-          role: 'user',
-          content: prompt,
-        },
-      ],
-    }),
-  })
-
-  if (!response.ok) {
-    const detail = await response.text()
-    throw new Error(`chat request failed: ${response.status} ${detail}`)
+  if (intent.wantsImage) {
+    imageEvidence = collectImageEvidence({
+      artifactDir: targetArtifactDir,
+      document,
+      question,
+      retrievedChunks,
+      limit: 2,
+    })
   }
 
-  const payload = await response.json()
+  const { prompt, paperTitle, citations } = promptPayload
+  const systemPrompt = mode.startsWith('rag')
+    ? '你是一个论文阅读助手。你必须只基于给定检索证据或子任务结果回答，优先给出结构化总结，并明确指出证据对应的页码、章节、图表或图片说明。若上下文不足，直接说明证据不足，不要编造。'
+    : '你是一个论文阅读助手。你必须只基于给定页面与锚点上下文回答，优先给出结构化总结，并明确指出回答对应的是当前页内容。若上下文不足，直接说明证据不足，不要编造。'
+  const payload = await postChatCompletion(settings, buildRequestBody({
+    settings,
+    messages: imageEvidence.length
+      ? buildConversationMessagesWithImages({
+          systemPrompt,
+          contextPrompt: [buildQuestionPlannerPrompt({ mode: mode.startsWith('rag') ? 'rag' : mode, intent }), prompt].join('\n\n'),
+          history,
+          userPrompt: question,
+          imageEvidence,
+        })
+      : buildConversationMessages({
+          systemPrompt,
+          contextPrompt: [buildQuestionPlannerPrompt({ mode: mode.startsWith('rag') ? 'rag' : mode, intent }), prompt].join('\n\n'),
+          history,
+          userPrompt: question,
+        }),
+    temperature: 0.2,
+    maxTokens: 1024,
+  }), 'chat request')
   return {
-    answer: payload?.choices?.[0]?.message?.content || '模型未返回内容。',
+    answer: parseModelReply(settings, payload),
     paperTitle,
     citations,
     mode,
     retrievedChunks,
+    imageEvidence,
+  }
+}
+
+const streamChatCompletion = async ({ question, page, anchorId, artifactDir, useRag, topK, history = [], res, conversationId, assistantMessageId }) => {
+  const settings = readSettings()
+  if (!settings.apiKey) {
+    throw new Error('apiKey is not configured')
+  }
+
+  const targetArtifactDir = artifactDir && fs.existsSync(artifactDir) ? artifactDir : resolveActiveDocumentDir()
+  const document = buildDocument(targetArtifactDir)
+  const intent = classifyQuestionIntent(question)
+  let mode = 'page'
+  let retrievedChunks = []
+  let imageEvidence = []
+  let promptPayload
+
+  if (useRag !== false || intent.recommendedMode === 'rag') {
+    const ragStatus = getRagStatus(targetArtifactDir)
+    if (ragStatus.indexed) {
+      writeProgressEvent(res, 'plan', '正在规划子任务...')
+      const plannerQueries = planAgentSubqueries({
+        question,
+        paperTitle: document.paperTitle,
+        intent,
+      })
+      const subAnswers = []
+      const mergedChunks = []
+      const seenChunkIds = new Set()
+
+      for (const [index, subquery] of plannerQueries.entries()) {
+        writeProgressEvent(res, 'retrieve', `正在检索子任务 ${index + 1}/${plannerQueries.length}：${subquery}`)
+        const retrieval = await retrieveRagChunks(targetArtifactDir, {
+          question: subquery,
+          topK: Math.min(Number(topK) || settings.ragTopK || 8, 4),
+          settings,
+        })
+        const chunks = Array.isArray(retrieval.chunks) ? retrieval.chunks.slice(0, 3) : []
+
+        for (const chunk of chunks) {
+          const dedupeKey = chunk.id || `${chunk.page}-${chunk.sectionPath || ''}-${chunk.text?.slice(0, 80) || ''}`
+          if (seenChunkIds.has(dedupeKey)) {
+            continue
+          }
+          seenChunkIds.add(dedupeKey)
+          mergedChunks.push(chunk)
+        }
+
+        if (!chunks.length) {
+          subAnswers.push({ subquery, answer: '证据不足', citations: [] })
+          continue
+        }
+
+        writeProgressEvent(res, 'reason', `正在分析子任务 ${index + 1}/${plannerQueries.length}...`)
+        const subPrompt = buildAgentSubAnswerPrompt({
+          paperTitle: document.paperTitle,
+          userQuestion: question,
+          subquery,
+          chunks,
+        })
+        const subPayload = await postChatCompletion(settings, buildRequestBody({
+          settings,
+          messages: buildConversationMessages({
+            systemPrompt: '你是论文分析智能体的子任务执行器。你只能根据当前证据回答当前子任务。',
+            contextPrompt: subPrompt.prompt,
+            history: [],
+            userPrompt: `请完成子任务：${subquery}`,
+          }),
+          temperature: 0.1,
+          maxTokens: 320,
+        }), 'chat subtask request')
+
+        subAnswers.push({
+          subquery,
+          answer: parseModelReply(settings, subPayload),
+          citations: subPrompt.citations,
+        })
+      }
+
+      if (subAnswers.length) {
+        writeProgressEvent(res, 'synthesis', '正在综合多个子任务结果...')
+        const synthesisPrompt = buildAgentSynthesisPrompt({
+          paperTitle: document.paperTitle,
+          question,
+          subAnswers,
+        })
+        promptPayload = {
+          paperTitle: document.paperTitle,
+          citations: synthesisPrompt.citations,
+          prompt: synthesisPrompt.prompt,
+        }
+        retrievedChunks = mergedChunks
+        mode = 'rag-agent'
+      }
+    }
+  }
+
+  if (!promptPayload) {
+    promptPayload = buildChatContext({ question, page, anchorId, artifactDir: targetArtifactDir })
+  }
+
+  if (intent.wantsImage) {
+    imageEvidence = collectImageEvidence({
+      artifactDir: targetArtifactDir,
+      document,
+      question,
+      retrievedChunks,
+      limit: 2,
+    })
+  }
+
+  const { prompt, paperTitle, citations } = promptPayload
+  const systemPrompt = mode.startsWith('rag')
+    ? '你是一个论文阅读助手。你必须只基于给定检索证据或子任务结果回答，优先给出结构化总结，并明确指出证据对应的页码、章节、图表或图片说明。若上下文不足，直接说明证据不足，不要编造。'
+    : '你是一个论文阅读助手。你必须只基于给定页面与锚点上下文回答，优先给出结构化总结，并明确指出回答对应的是当前页内容。若上下文不足，直接说明证据不足，不要编造。'
+  const response = await postChatCompletionStream(settings, createStreamingRequestBody({
+    settings,
+    messages: imageEvidence.length
+      ? buildConversationMessagesWithImages({
+          systemPrompt,
+          contextPrompt: [buildQuestionPlannerPrompt({ mode: mode.startsWith('rag') ? 'rag' : mode, intent }), prompt].join('\n\n'),
+          history,
+          userPrompt: question,
+          imageEvidence,
+        })
+      : buildConversationMessages({
+          systemPrompt,
+          contextPrompt: [buildQuestionPlannerPrompt({ mode: mode.startsWith('rag') ? 'rag' : mode, intent }), prompt].join('\n\n'),
+          history,
+          userPrompt: question,
+        }),
+    temperature: 0.2,
+    maxTokens: 1024,
+  }), 'chat request')
+
+  await pipeModelStream({
+    response,
+    res,
+    conversationId,
+    assistantMessageId,
+    meta: {
+      paperTitle,
+      citations,
+      mode,
+      retrievedChunks,
+      imageEvidence,
+    },
+  })
+}
+
+const requestModelTest = async () => {
+  const settings = readSettings()
+  if (!settings.apiKey) {
+    throw new Error('apiKey is not configured')
+  }
+
+  if (!settings.model) {
+    throw new Error('model is not configured')
+  }
+
+  const payload = await postChatCompletion(settings, buildRequestBody({
+    settings,
+    systemPrompt: 'You are a connection test assistant. Reply with a very short confirmation only.',
+    userPrompt: 'Reply with: MODEL_OK',
+    temperature: 0,
+    maxTokens: 32,
+  }), 'model test request')
+  const reply = String(parseModelReply(settings, payload) || '').trim() || '模型已返回空内容'
+
+  return {
+    ok: true,
+    provider: settings.provider,
+    model: settings.model,
+    reply,
+    payloadPreview: summarizePayload(payload),
   }
 }
 
 ensureSettings()
+ensureConversationsStore()
 ensureDirectories()
 
 app.use('/workspace', express.static(path.join(rootDir, 'workspace')))
@@ -1331,6 +2745,9 @@ app.post('/api/chat', async (req, res) => {
   const useRag = Boolean(req.body?.useRag)
   const topK = Number(req.body?.topK) || undefined
   const artifactDir = typeof req.body?.artifactDir === 'string' ? req.body.artifactDir.trim() : ''
+  const stream = Boolean(req.body?.stream)
+  const conversationId = typeof req.body?.conversationId === 'string' ? req.body.conversationId.trim() : ''
+  const history = Array.isArray(req.body?.history) ? req.body.history : []
 
   if (!question) {
     res.status(400).json({ error: 'question is required' })
@@ -1338,10 +2755,207 @@ app.post('/api/chat', async (req, res) => {
   }
 
   try {
-    const result = await requestChatCompletion({ question, page, anchorId, artifactDir, useRag, topK })
+    const targetArtifactDir = artifactDir && fs.existsSync(artifactDir) ? artifactDir : resolveActiveDocumentDir()
+    const document = buildDocument(targetArtifactDir)
+    const normalizedConversationId = conversationId || `conv-${Date.now()}`
+    appendConversationMessage({
+      conversationId: normalizedConversationId,
+      artifactDir: targetArtifactDir,
+      paperTitle: document.paperTitle,
+      title: resolveConversationTitle({ userText: question, paperTitle: document.paperTitle }),
+      message: {
+        id: `msg-user-${Date.now()}`,
+        role: 'user',
+        content: question,
+        createdAt: new Date().toISOString(),
+        status: 'done',
+      },
+    })
+
+    if (stream) {
+      res.setHeader('Content-Type', 'application/x-ndjson; charset=utf-8')
+      res.setHeader('Cache-Control', 'no-cache, no-transform')
+      res.setHeader('Connection', 'keep-alive')
+      res.flushHeaders?.()
+      const assistantId = `msg-assistant-${Date.now()}`
+      appendConversationMessage({
+        conversationId: normalizedConversationId,
+        artifactDir: targetArtifactDir,
+        paperTitle: document.paperTitle,
+        message: {
+          id: assistantId,
+          role: 'assistant',
+          content: '',
+          createdAt: new Date().toISOString(),
+          status: 'streaming',
+        },
+      })
+      await streamChatCompletion({
+        question,
+        page,
+        anchorId,
+        artifactDir: targetArtifactDir,
+        useRag,
+        topK,
+        history,
+        res,
+        conversationId: normalizedConversationId,
+        assistantMessageId: assistantId,
+      })
+      res.end()
+      return
+    }
+
+    const result = await requestChatCompletion({ question, page, anchorId, artifactDir: targetArtifactDir, useRag, topK, history })
+    appendConversationMessage({
+      conversationId: normalizedConversationId,
+      artifactDir: targetArtifactDir,
+      paperTitle: result.paperTitle,
+      message: {
+        id: `msg-assistant-${Date.now()}`,
+        role: 'assistant',
+        content: result.answer,
+        createdAt: new Date().toISOString(),
+        status: 'done',
+        citations: result.citations,
+        mode: result.mode,
+      },
+    })
+    res.json({ ...result, conversationId: normalizedConversationId })
+  } catch (error) {
+    if (stream && !res.headersSent) {
+      res.status(500)
+      res.setHeader('Content-Type', 'application/x-ndjson; charset=utf-8')
+    }
+
+    if (stream) {
+      writeJsonLine(res, { type: 'error', error: error instanceof Error ? error.message : 'chat failed' })
+      res.end()
+      return
+    }
+
+    res.status(500).json({ error: error instanceof Error ? error.message : 'chat failed' })
+  }
+})
+
+app.post('/api/paper/summary', async (req, res) => {
+  const artifactDir = typeof req.body?.artifactDir === 'string' ? req.body.artifactDir.trim() : ''
+  const stream = Boolean(req.body?.stream)
+  const conversationId = typeof req.body?.conversationId === 'string' ? req.body.conversationId.trim() : ''
+  const history = Array.isArray(req.body?.history) ? req.body.history : []
+  const userPrompt = typeof req.body?.userPrompt === 'string' ? req.body.userPrompt.trim() : ''
+
+  try {
+    const targetArtifactDir = artifactDir && fs.existsSync(artifactDir) ? artifactDir : resolveActiveDocumentDir()
+    const document = buildDocument(targetArtifactDir)
+    const normalizedConversationId = conversationId || `conv-${Date.now()}`
+    const summaryPrompt = userPrompt || `请总结论文《${document.paperTitle}》，并说明关键创新、整体架构、关键机制与实验结论。`
+    appendConversationMessage({
+      conversationId: normalizedConversationId,
+      artifactDir: targetArtifactDir,
+      paperTitle: document.paperTitle,
+      title: resolveConversationTitle({ userText: summaryPrompt, paperTitle: document.paperTitle }),
+      message: {
+        id: `msg-user-${Date.now()}`,
+        role: 'user',
+        content: summaryPrompt,
+        createdAt: new Date().toISOString(),
+        status: 'done',
+      },
+    })
+
+    if (stream) {
+      res.setHeader('Content-Type', 'application/x-ndjson; charset=utf-8')
+      res.setHeader('Cache-Control', 'no-cache, no-transform')
+      res.setHeader('Connection', 'keep-alive')
+      res.flushHeaders?.()
+      const assistantId = `msg-assistant-${Date.now()}`
+      appendConversationMessage({
+        conversationId: normalizedConversationId,
+        artifactDir: targetArtifactDir,
+        paperTitle: document.paperTitle,
+        message: {
+          id: assistantId,
+          role: 'assistant',
+          content: '',
+          createdAt: new Date().toISOString(),
+          status: 'streaming',
+        },
+      })
+      await streamPaperSummary({
+        artifactDir: targetArtifactDir,
+        history,
+        userPrompt: summaryPrompt,
+        res,
+        conversationId: normalizedConversationId,
+        assistantMessageId: assistantId,
+      })
+      res.end()
+      return
+    }
+
+    const result = await requestPaperSummary({ artifactDir: targetArtifactDir, history, userPrompt: summaryPrompt })
+    appendConversationMessage({
+      conversationId: normalizedConversationId,
+      artifactDir: targetArtifactDir,
+      paperTitle: result.paperTitle,
+      message: {
+        id: `msg-assistant-${Date.now()}`,
+        role: 'assistant',
+        content: result.answer,
+        createdAt: new Date().toISOString(),
+        status: 'done',
+        citations: result.citations,
+      },
+    })
+    res.json({ ...result, conversationId: normalizedConversationId })
+  } catch (error) {
+    if (stream && !res.headersSent) {
+      res.status(500)
+      res.setHeader('Content-Type', 'application/x-ndjson; charset=utf-8')
+    }
+
+    if (stream) {
+      writeJsonLine(res, { type: 'error', error: error instanceof Error ? error.message : 'paper summary failed' })
+      res.end()
+      return
+    }
+
+    res.status(500).json({ error: error instanceof Error ? error.message : 'paper summary failed' })
+  }
+})
+
+app.get('/api/conversations', (_req, res) => {
+  const store = readConversationsStore()
+  res.json(store.conversations.map(toConversationSummary))
+})
+
+app.post('/api/conversations', (req, res) => {
+  const artifactDir = typeof req.body?.artifactDir === 'string' ? req.body.artifactDir.trim() : resolveActiveDocumentDir()
+  const paperTitle = typeof req.body?.paperTitle === 'string' ? req.body.paperTitle.trim() : ''
+  const title = typeof req.body?.title === 'string' ? req.body.title.trim() : ''
+  const conversation = createConversationRecord({ artifactDir, paperTitle, title })
+  const store = readConversationsStore()
+  store.conversations.unshift(conversation)
+  writeConversationsStore(store)
+  res.json({ ...toConversationSummary(conversation), messages: conversation.messages })
+})
+
+app.get('/api/conversations/:conversationId', (req, res) => {
+  const { conversation } = getConversationRecord(req.params.conversationId)
+  if (!conversation) {
+    res.status(404).json({ error: 'conversation not found' })
+    return
+  }
+  res.json({ ...toConversationSummary(conversation), messages: conversation.messages })
+})
+
+app.post('/api/model/test', async (_req, res) => {
+  try {
+    const result = await requestModelTest()
     res.json(result)
   } catch (error) {
-    res.status(500).json({ error: error instanceof Error ? error.message : 'chat failed' })
+    res.status(500).json({ error: error instanceof Error ? error.message : 'model test failed' })
   }
 })
 

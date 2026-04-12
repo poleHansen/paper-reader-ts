@@ -1,0 +1,17 @@
+﻿from pathlib import Path
+print('step=import_utils', flush=True)
+from server.rag_utils import ensure_faiss, ensure_numpy, EmbeddingBackend
+print('step=imports_ok', flush=True)
+np = ensure_numpy()
+print('step=numpy_ok', np.__version__, flush=True)
+faiss = ensure_faiss()
+print('step=faiss_ok', getattr(faiss, '__file__', 'n/a'), flush=True)
+index_path = Path(r"D:/code/paper-reader-ts/workspace/runs/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields-1775921171411/1775921171409-Wavelet-Convolutions-for-Large-Receptive-Fields/auto/rag/index.faiss")
+print('step=read_index', flush=True)
+index = faiss.read_index(index_path.as_posix())
+print('step=index_ok', index.ntotal, flush=True)
+print('step=backend_init', flush=True)
+backend = EmbeddingBackend('BAAI/bge-m3', 'BAAI/bge-m3', 'cpu')
+print('step=before_encode', flush=True)
+vec = backend.encode(['分析一下这篇论文的架构'], batch_size=1)
+print('step=encode_ok', len(vec), flush=True)

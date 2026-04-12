@@ -31,8 +31,39 @@ export type ParseTask = {
   inputPath?: string
   outputDir?: string
   error?: string
-  kind?: 'task' | 'chat'
+  kind?: 'task' | 'chat' | 'summary'
   citations?: string[]
+}
+
+export type ChatMessageRole = 'user' | 'assistant' | 'system'
+
+export type ChatMessageStatus = 'streaming' | 'done' | 'error'
+
+export type ChatMessage = {
+  id: string
+  role: ChatMessageRole
+  content: string
+  createdAt: string
+  status?: ChatMessageStatus
+  citations?: string[]
+  mode?: 'page' | 'rag'
+  question?: string
+  error?: string
+  retrievedChunks?: RagChunkItem[]
+  imageEvidence?: ImageEvidenceItem[]
+}
+
+export type ConversationSummary = {
+  id: string
+  title: string
+  artifactDir: string
+  paperTitle: string
+  updatedAt: string
+  messageCount: number
+}
+
+export type ConversationDetail = ConversationSummary & {
+  messages: ChatMessage[]
 }
 
 export type FigureItem = {
@@ -40,6 +71,15 @@ export type FigureItem = {
   page: number
   src: string
   caption: string
+  remoteUrl?: string
+}
+
+export type ImageEvidenceItem = {
+  id: string
+  page: number
+  caption: string
+  src?: string
+  remoteUrl?: string
 }
 
 export type AnchorItem = {
@@ -98,6 +138,7 @@ export type OutlineItem = {
 export type SettingsState = {
   provider: string
   model: string
+  openaiApiMode: 'chat' | 'responses'
   apiBaseUrl: string
   apiKey: string
   githubRepo: string
@@ -155,6 +196,63 @@ export type ChatResponse = {
   citations: string[]
   mode: 'page' | 'rag'
   retrievedChunks?: RagChunkItem[]
+  imageEvidence?: ImageEvidenceItem[]
+}
+
+export type PaperSummaryResponse = {
+  answer: string
+  paperTitle: string
+  citations: string[]
+  sections: Array<{
+    title: string
+    coverage: 'good' | 'partial'
+  }>
+}
+
+export type StreamMetaEvent = {
+  type: 'meta'
+  paperTitle?: string
+  citations?: string[]
+  mode?: 'page' | 'rag'
+  retrievedChunks?: RagChunkItem[]
+  imageEvidence?: ImageEvidenceItem[]
+  sections?: Array<{
+    title: string
+    coverage: 'good' | 'partial'
+  }>
+}
+
+export type StreamDeltaEvent = {
+  type: 'delta'
+  delta: string
+  answer: string
+  stage?: string
+}
+
+export type StreamDoneEvent = {
+  type: 'done'
+  answer: string
+  paperTitle?: string
+  citations?: string[]
+  mode?: 'page' | 'rag'
+  retrievedChunks?: RagChunkItem[]
+  imageEvidence?: ImageEvidenceItem[]
+  sections?: Array<{
+    title: string
+    coverage: 'good' | 'partial'
+  }>
+}
+
+export type StreamErrorEvent = {
+  type: 'error'
+  error: string
+}
+
+export type StreamEvent = StreamMetaEvent | StreamDeltaEvent | StreamDoneEvent | StreamErrorEvent
+
+export type ConversationRequestMessage = {
+  role: 'user' | 'assistant'
+  content: string
 }
 
 export type RagChunkItem = {
@@ -186,4 +284,12 @@ export type RagRetrieveResponse = {
   ragDir: string
   chunks: RagChunkItem[]
   model: string
+}
+
+export type ModelTestResponse = {
+  ok: boolean
+  provider: string
+  model: string
+  reply: string
+  payloadPreview?: string
 }

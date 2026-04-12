@@ -6,21 +6,24 @@ import rehypeKatex from 'rehype-katex'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import {
+  createConversation,
   createImportTask,
   createGithubSyncTask,
-  askPaperQuestion,
+  fetchConversation,
+  fetchConversations,
   fetchCondaEnvironments,
   fetchLibraryDocuments,
   fetchPaperDocument,
-  fetchTaskFeed,
   fetchSettings,
   retryImportTask,
   saveSettings,
   selectLibraryDocument,
-  subscribeTaskFeed,
+  streamPaperQuestion,
+  streamPaperSummary,
+  testModelConnection,
   uploadAndImportPdf,
 } from './lib/api'
-import type { Block, CondaEnvironmentItem, FigureItem, LibraryDocument, OutlineItem, Page, PageMeta, ParseTask, SettingsState } from './types'
+import type { Block, ChatMessage, CondaEnvironmentItem, ConversationRequestMessage, ConversationSummary, FigureItem, LibraryDocument, ModelTestResponse, OutlineItem, Page, PageMeta, ParseTask, SettingsState, StreamEvent } from './types'
 
 type MarkdownHeadingEntry = {
   id: string
@@ -224,6 +227,73 @@ const MarkdownTable = ({ children }: { children?: React.ReactNode }) => (
   </div>
 )
 
+const renderMarkdownSnippet = (source: string) => {
+  const normalized = normalizeMarkdown(source)
+
+  return (
+    <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeRaw, rehypeKatex]}>
+      {normalized}
+    </ReactMarkdown>
+  )
+}
+
+const shouldUseRagForQuestion = (question: string): boolean => {
+  const normalized = question.trim().toLowerCase()
+  if (!normalized) {
+    return false
+  }
+
+  const fullPaperSignals = [
+    '全文',
+    '整篇',
+    '整篇论文',
+    '整体',
+    '总体',
+    '架构',
+    '结构',
+    '框架',
+    '流程',
+    '架构分析',
+    '结构分析',
+    '论文架构',
+    '系统架构',
+    '整体架构',
+    '方法',
+    '机制',
+    '原理',
+    '实验',
+    '消融',
+    '对比',
+    '创新点',
+    '贡献',
+    '总结',
+    'summarize',
+    'summary',
+    'architecture',
+    'method',
+    'mechanism',
+    'experiment',
+    'ablation',
+    'contribution',
+  ]
+
+  const pageLocalSignals = [
+    '当前页',
+    '本页',
+    '这一页',
+    '这一段',
+    '这个图',
+    '这张图',
+    '本图',
+  ]
+
+  if (pageLocalSignals.some((signal) => normalized.includes(signal)) && !fullPaperSignals.some((signal) => normalized.includes(signal))) {
+    return false
+  }
+
+  return fullPaperSignals.some((signal) => normalized.includes(signal))
+}
+
 const resolveMarkdownAsset = (src: string, assetBasePath: string) => {
   if (!src) {
     return src
@@ -258,6 +328,7 @@ const MarkdownImage = ({
 const defaultSettings: SettingsState = {
   provider: 'OpenAI Compatible',
   model: 'gpt-4.1-mini',
+  openaiApiMode: 'chat',
   apiBaseUrl: 'https://api.openai.com/v1',
   apiKey: '',
   githubRepo: 'honor/paper-reader-assets',
@@ -365,6 +436,7 @@ function App() {
   const outlineContainerRef = useRef<HTMLDivElement | null>(null)
   const outlineItemRefs = useRef<Record<string, HTMLButtonElement | null>>({})
   const headingObserverRef = useRef<IntersectionObserver | null>(null)
+  const chatTextareaRef = useRef<HTMLTextAreaElement | null>(null)
   const [pages, setPages] = useState<Page[]>([])
   const [outline, setOutline] = useState<OutlineItem[]>([])
   const [figures, setFigures] = useState<FigureItem[]>([])
@@ -372,10 +444,15 @@ function App() {
   const [pageMetas, setPageMetas] = useState<PageMeta[]>([])
   const [markdown, setMarkdown] = useState('')
   const [taskFeed, setTaskFeed] = useState<ParseTask[]>([])
+  const [conversations, setConversations] = useState<ConversationSummary[]>([])
+  const [activeConversationId, setActiveConversationId] = useState('')
+  const [messages, setMessages] = useState<ChatMessage[]>([])
+  const [assistantSidebarMode, setAssistantSidebarMode] = useState<'none' | 'history' | 'current'>('none')
   const [activePanel, setActivePanel] = useState<'assistant' | 'library' | 'outline' | 'figures'>('assistant')
   const [activePage, setActivePage] = useState(1)
   const [activeOutlineId, setActiveOutlineId] = useState('')
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+  const [isImportOpen, setIsImportOpen] = useState(false)
   const [settings, setSettings] = useState(defaultSettings)
   const [bootstrapError, setBootstrapError] = useState('')
   const [assetBasePath, setAssetBasePath] = useState('/工业缺陷零样本分割2026/auto')
@@ -387,9 +464,60 @@ function App() {
   const [chatInput, setChatInput] = useState('请总结这篇论文的核心创新，并说明当前页重点。')
   const [chatError, setChatError] = useState('')
   const [isAsking, setIsAsking] = useState(false)
+  const [isSummarizing, setIsSummarizing] = useState(false)
   const [condaEnvs, setCondaEnvs] = useState<CondaEnvironmentItem[]>([])
   const [condaEnvError, setCondaEnvError] = useState('')
   const [isRefreshingCondaEnvs, setIsRefreshingCondaEnvs] = useState(false)
+  const [isTestingModel, setIsTestingModel] = useState(false)
+  const [modelTestResult, setModelTestResult] = useState<ModelTestResponse | null>(null)
+  const [modelTestError, setModelTestError] = useState('')
+  const activeConversation = useMemo(
+    () => conversations.find((conversation) => conversation.id === activeConversationId) ?? null,
+    [conversations, activeConversationId],
+  )
+
+  useEffect(() => {
+    const textarea = chatTextareaRef.current
+    if (!textarea) {
+      return
+    }
+
+    textarea.style.height = 'auto'
+    textarea.style.height = `${textarea.scrollHeight}px`
+  }, [chatInput])
+
+  const toHistoryMessages = (items: ChatMessage[]): ConversationRequestMessage[] => {
+    return items
+      .filter((item): item is ChatMessage & { role: 'user' | 'assistant' } => item.role === 'user' || item.role === 'assistant')
+      .filter((item) => item.status !== 'error')
+      .map((item) => ({
+        role: item.role,
+        content: item.content,
+      }))
+  }
+
+  const syncConversationList = async (preferredConversationId?: string) => {
+    const nextConversations = await fetchConversations()
+    setConversations(nextConversations)
+
+    const nextActiveId = preferredConversationId
+      || activeConversationId
+      || nextConversations[0]?.id
+      || ''
+
+    if (!nextActiveId) {
+      setActiveConversationId('')
+      setMessages([])
+      return
+    }
+
+    const detail = await fetchConversation(nextActiveId)
+    setActiveConversationId(detail.id)
+    setMessages((current) => {
+      const hasStreamingLocalMessage = current.some((item) => item.status === 'streaming')
+      return hasStreamingLocalMessage ? current : detail.messages
+    })
+  }
 
   const condaOptions = useMemo(() => {
     const options = [...condaEnvs]
@@ -454,26 +582,13 @@ function App() {
         const condaResponse = await fetchCondaEnvironments()
         setCondaEnvs(condaResponse.envs)
         setCondaEnvError(condaResponse.error)
+        await syncConversationList()
       } catch (error) {
         setBootstrapError(error instanceof Error ? error.message : '加载本地服务失败')
       }
     }
 
     void bootstrap()
-
-    const unsubscribe = subscribeTaskFeed((tasks) => {
-      setTaskFeed(tasks)
-      void Promise.all([fetchPaperDocument(), fetchLibraryDocuments()])
-        .then(([document, library]) => {
-          applyDocument(document)
-          setLibraryDocuments(library)
-        })
-        .catch(() => undefined)
-    })
-
-    return () => {
-      unsubscribe()
-    }
   }, [])
 
   useEffect(() => {
@@ -498,6 +613,77 @@ function App() {
     setPendingAutoOpenTaskId('')
   }, [libraryDocuments, pendingAutoOpenTaskId, taskFeed])
 
+  const ensureConversation = async (seedTitle?: string) => {
+    if (activeConversationId) {
+      return activeConversationId
+    }
+
+    const created = await createConversation({
+      artifactDir: assetBasePath,
+      paperTitle,
+      title: seedTitle,
+    })
+    setActiveConversationId(created.id)
+    setMessages(created.messages)
+    setConversations((current) => {
+      const exists = current.some((item) => item.id === created.id)
+      if (exists) {
+        return current
+      }
+
+      return [{
+        id: created.id,
+        title: created.title,
+        artifactDir: created.artifactDir,
+        paperTitle: created.paperTitle,
+        updatedAt: created.updatedAt,
+        messageCount: created.messages.length,
+      }, ...current]
+    })
+    return created.id
+  }
+
+  const handleSelectConversation = async (conversationId: string) => {
+    const detail = await fetchConversation(conversationId)
+    setActiveConversationId(detail.id)
+    setMessages(detail.messages)
+    setAssistantSidebarMode('current')
+  }
+
+  const handleCreateConversation = async () => {
+    const created = await createConversation({
+      artifactDir: assetBasePath,
+      paperTitle,
+      title: `${paperTitle} 新会话`,
+    })
+    setActiveConversationId(created.id)
+    setMessages(created.messages)
+    setAssistantSidebarMode('current')
+    setConversations((current) => {
+      const exists = current.some((item) => item.id === created.id)
+      if (exists) {
+        return current
+      }
+
+      return [{
+        id: created.id,
+        title: created.title,
+        artifactDir: created.artifactDir,
+        paperTitle: created.paperTitle,
+        updatedAt: created.updatedAt,
+        messageCount: created.messages.length,
+      }, ...current]
+    })
+  }
+
+  const handleOpenConversationHistory = () => {
+    setAssistantSidebarMode((current) => (current === 'history' ? 'none' : 'history'))
+  }
+
+  const handleToggleCurrentConversation = () => {
+    setAssistantSidebarMode((current) => (current === 'current' ? 'none' : 'current'))
+  }
+
   const groupedLibraryDocuments = useMemo(
     () => ({
       processing: libraryDocuments.filter((item) => item.status === 'processing'),
@@ -505,6 +691,10 @@ function App() {
       failed: libraryDocuments.filter((item) => item.status === 'failed'),
     }),
     [libraryDocuments],
+  )
+  const libraryDocumentCount = useMemo(
+    () => groupedLibraryDocuments.processing.length + groupedLibraryDocuments.ready.length,
+    [groupedLibraryDocuments],
   )
   const renderedMarkdown = useMemo(() => normalizeMarkdown(markdown), [markdown])
   const markdownHeadings = useMemo(() => extractMarkdownHeadings(renderedMarkdown), [renderedMarkdown])
@@ -689,6 +879,7 @@ function App() {
       setTaskFeed((current) => [response.task, ...current])
       setPendingAutoOpenTaskId(response.task.id)
       setActivePanel('library')
+      setIsImportOpen(false)
       return
     }
 
@@ -700,6 +891,7 @@ function App() {
     setTaskFeed((current) => [task, ...current])
     setPendingAutoOpenTaskId(task.id)
     setActivePanel('library')
+    setIsImportOpen(false)
   }
 
   const handleSelectLibraryDocument = async (artifactDir: string) => {
@@ -779,14 +971,27 @@ function App() {
   const handleSaveSettings = async () => {
     const nextSettings = await saveSettings(settings)
     setSettings(nextSettings)
-    const [nextTasks, condaResponse] = await Promise.all([
-      fetchTaskFeed(),
-      fetchCondaEnvironments(),
-    ])
-    setTaskFeed(nextTasks)
+    const condaResponse = await fetchCondaEnvironments()
     setCondaEnvs(condaResponse.envs)
     setCondaEnvError(condaResponse.error)
     setIsSettingsOpen(false)
+  }
+
+  const handleTestModel = async () => {
+    setIsTestingModel(true)
+    setModelTestError('')
+    setModelTestResult(null)
+
+    try {
+      const nextSettings = await saveSettings(settings)
+      setSettings(nextSettings)
+      const response = await testModelConnection()
+      setModelTestResult(response)
+    } catch (error) {
+      setModelTestError(error instanceof Error ? error.message : '模型测试失败')
+    } finally {
+      setIsTestingModel(false)
+    }
   }
 
   const handleAsk = async () => {
@@ -796,76 +1001,193 @@ function App() {
 
     setIsAsking(true)
     setChatError('')
+    setActivePanel('assistant')
+    setAssistantSidebarMode('none')
     const queuedQuestion = chatInput.trim()
-    const pendingId = `chat-${Date.now()}`
-
-    setTaskFeed((current) => [
-      {
-        id: pendingId,
-        kind: 'chat',
-        title: '论文问答',
-        detail: queuedQuestion,
-        status: 'queued',
-        timestamp: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }),
-        logs: ['正在整理当前页上下文。'],
-        citations: [`P.${activePage}`],
-      },
-      ...current,
-    ])
+    const conversationId = await ensureConversation(queuedQuestion)
+    const userMessage: ChatMessage = {
+      id: `local-user-${Date.now()}`,
+      role: 'user',
+      content: queuedQuestion,
+      createdAt: new Date().toISOString(),
+      status: 'done',
+    }
+    const assistantMessageId = `local-assistant-${Date.now()}`
+    const assistantMessage: ChatMessage = {
+      id: assistantMessageId,
+      role: 'assistant',
+      content: '',
+      createdAt: new Date().toISOString(),
+      status: 'streaming',
+      citations: [`P.${activePage}`],
+      question: queuedQuestion,
+      mode: shouldUseRagForQuestion(queuedQuestion) ? 'rag' : 'rag',
+    }
+    const currentMessages = [...messages, userMessage]
+    setMessages([...currentMessages, assistantMessage])
 
     try {
-      const response = await askPaperQuestion({
+      await streamPaperQuestion({
         question: queuedQuestion,
         page: activePage,
-      })
-      setTaskFeed((current) =>
-        current.map((item) =>
-          item.id === pendingId
+        useRag: settings.ragEnabled,
+        topK: settings.ragTopK,
+        artifactDir: assetBasePath,
+        conversationId,
+        history: toHistoryMessages(messages),
+      }, (event: StreamEvent) => {
+        if (event.type === 'meta') {
+          setMessages((current) => current.map((item) => item.id === assistantMessageId
             ? {
                 ...item,
-                status: 'ready',
-                detail: response.answer,
-                logs: [queuedQuestion],
-                citations: response.citations,
+                citations: event.citations ?? item.citations,
+                mode: event.mode,
+                retrievedChunks: event.retrievedChunks ?? item.retrievedChunks,
+                imageEvidence: event.imageEvidence ?? item.imageEvidence,
               }
-            : item,
-        ),
-      )
+            : item))
+          return
+        }
+
+        if (event.type === 'delta') {
+          setMessages((current) => current.map((item) => item.id === assistantMessageId
+            ? {
+                ...item,
+                status: 'streaming',
+                content: event.answer,
+              }
+            : item))
+          return
+        }
+
+        if (event.type === 'done') {
+          setChatInput('')
+          setMessages((current) => current.map((item) => item.id === assistantMessageId
+            ? {
+                ...item,
+                status: 'done',
+                content: event.answer,
+                citations: event.citations ?? item.citations,
+                mode: event.mode,
+                retrievedChunks: event.retrievedChunks ?? item.retrievedChunks,
+                imageEvidence: event.imageEvidence ?? item.imageEvidence,
+              }
+            : item))
+        }
+      })
+      await syncConversationList(conversationId)
     } catch (error) {
       const message = error instanceof Error ? error.message : '提问失败'
       setChatError(message)
-      setTaskFeed((current) =>
-        current.map((item) =>
-          item.id === pendingId
-            ? {
-                ...item,
-                status: 'failed',
-                detail: message,
-                logs: [queuedQuestion],
-              }
-            : item,
-        ),
-      )
+      setMessages((current) => current.map((item) => item.id === assistantMessageId
+        ? {
+            ...item,
+            status: 'error',
+            content: message,
+            error: message,
+          }
+        : item))
     } finally {
       setIsAsking(false)
     }
   }
 
+  const handleSummarizePaper = async () => {
+    if (isSummarizing) {
+      return
+    }
+
+    setIsSummarizing(true)
+    setChatError('')
+    setActivePanel('assistant')
+    setAssistantSidebarMode('none')
+    const summaryPrompt = `请总结论文《${paperTitle}》，并说明核心创新、整体架构、关键方法机制与实验结果。`
+    const conversationId = await ensureConversation(summaryPrompt)
+    const userMessage: ChatMessage = {
+      id: `local-user-${Date.now()}`,
+      role: 'user',
+      content: summaryPrompt,
+      createdAt: new Date().toISOString(),
+      status: 'done',
+    }
+    const assistantMessageId = `local-summary-${Date.now()}`
+    const assistantMessage: ChatMessage = {
+      id: assistantMessageId,
+      role: 'assistant',
+      content: '',
+      createdAt: new Date().toISOString(),
+      status: 'streaming',
+      question: summaryPrompt,
+    }
+    setMessages((current) => [...current, userMessage, assistantMessage])
+
+    try {
+      await streamPaperSummary({
+        conversationId,
+        artifactDir: assetBasePath,
+        history: toHistoryMessages(messages),
+      }, (event: StreamEvent) => {
+        if (event.type === 'meta') {
+          setMessages((current) => current.map((item) => item.id === assistantMessageId
+            ? {
+                ...item,
+                citations: event.citations ?? item.citations,
+                mode: event.mode ?? item.mode,
+                retrievedChunks: event.retrievedChunks ?? item.retrievedChunks,
+                imageEvidence: event.imageEvidence ?? item.imageEvidence,
+              }
+            : item))
+          return
+        }
+
+        if (event.type === 'delta') {
+          setMessages((current) => current.map((item) => item.id === assistantMessageId
+            ? {
+                ...item,
+                status: 'streaming',
+                content: event.answer,
+              }
+            : item))
+          return
+        }
+
+        if (event.type === 'done') {
+          setMessages((current) => current.map((item) => item.id === assistantMessageId
+            ? {
+                ...item,
+                status: 'done',
+                content: event.answer,
+                citations: event.citations ?? item.citations,
+                mode: event.mode ?? item.mode,
+                retrievedChunks: event.retrievedChunks ?? item.retrievedChunks,
+                imageEvidence: event.imageEvidence ?? item.imageEvidence,
+              }
+            : item))
+        }
+      })
+      await syncConversationList(conversationId)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : '总结失败'
+      setChatError(message)
+      setMessages((current) => current.map((item) => item.id === assistantMessageId
+        ? {
+            ...item,
+            status: 'error',
+            content: message,
+            error: message,
+          }
+        : item))
+    } finally {
+      setIsSummarizing(false)
+    }
+  }
+
+  const handleClearAssistantFeed = () => {
+    void handleCreateConversation()
+    setChatError('')
+  }
+
   const isBootstrapping = !markdown && pages.length === 0 && !bootstrapError
-  const summaryCards = [
-    {
-      label: 'Sections',
-      value: String(outline.length).padStart(2, '0'),
-    },
-    {
-      label: 'Figures',
-      value: String(figures.length).padStart(2, '0'),
-    },
-    {
-      label: 'Pages',
-      value: String(pages.length).padStart(2, '0'),
-    },
-  ]
   const renderedHeadingUsage = new Map<string, number>()
   const renderMarkdownHeading = (
     level: number,
@@ -909,7 +1231,7 @@ function App() {
         </div>
 
         <div className="topbar-actions">
-          <button className="ghost-button" onClick={() => void handleImport()}>导入论文</button>
+          <button className="ghost-button" onClick={() => setIsImportOpen(true)}>导入论文</button>
           <button className="primary-button" onClick={() => void handleGithubSync()}>同步图片</button>
           <button className="icon-button" onClick={() => setIsSettingsOpen(true)}>
             设置
@@ -918,45 +1240,8 @@ function App() {
       </header>
 
       <main className="workspace-grid">
-        <aside className="left-panel">
-          <section className="hero-card">
-            <div>
-              <div className="eyebrow">Live Workspace</div>
-              <h2>论文阅读助手</h2>
-            </div>
-            <p>
-              顶部负责导入与配置，左侧持续输出解析与问答流，右侧保持沉浸式阅读。当前页面已绑定你现有的 MinerU 解析结果。
-            </p>
-            <div className="quick-import-grid">
-              <label>
-                直接上传 PDF
-                <input
-                  type="file"
-                  accept="application/pdf"
-                  onChange={(event) => setSelectedFile(event.target.files?.[0] ?? null)}
-                />
-              </label>
-              <label>
-                本地 PDF 路径
-                <input value={filePath} onChange={(event) => setFilePath(event.target.value)} />
-              </label>
-              <label>
-                同步目录
-                <input value={folderPath} onChange={(event) => setFolderPath(event.target.value)} />
-              </label>
-            </div>
-            {bootstrapError ? <p>{bootstrapError}</p> : null}
-            <div className="summary-grid">
-              {summaryCards.map((item) => (
-                <div key={item.label} className="summary-tile">
-                  <span>{item.label}</span>
-                  <strong>{item.value}</strong>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          <section className="panel-tabs">
+        <section className="center-panel">
+          <section className="panel-tabs rail-tabs top-panel-tabs">
             <button
               className={activePanel === 'assistant' ? 'tab active' : 'tab'}
               onClick={() => setActivePanel('assistant')}
@@ -983,29 +1268,140 @@ function App() {
             </button>
           </section>
 
-          <section className="panel-content">
+          <section className="panel-content center-content">
             {activePanel === 'assistant' && (
-              <div className="stream-list">
-                {taskFeed.map((task) => (
-                  <article key={task.id} className={`stream-card ${task.status}`}>
-                    <div className="stream-meta">
-                      <span>{task.kind === 'chat' ? `${task.title} · ${task.citations?.join(' · ') ?? ''}` : task.title}</span>
-                      <time>{task.timestamp}</time>
+              <div className={assistantSidebarMode === 'none' ? 'assistant-column assistant-column-full' : 'assistant-column'}>
+                {assistantSidebarMode !== 'none' && (
+                <div className="conversation-sidebar">
+                  <div className="conversation-sidebar-header">
+                    <div>
+                      <strong>{assistantSidebarMode === 'history' ? '会话' : '当前会话'}</strong>
+                      <span>
+                        {assistantSidebarMode === 'history'
+                          ? '基于当前论文上下文持续追问'
+                          : (activeConversation?.paperTitle || paperTitle)}
+                      </span>
                     </div>
-                    <p>{task.detail}</p>
-                    {task.logs?.length ? <pre className="stream-log">{task.logs.slice(-4).join('\n')}</pre> : null}
-                  </article>
-                ))}
-                <div className="chat-composer">
-                  <textarea
-                    rows={4}
-                    value={chatInput}
-                    onChange={(event) => setChatInput(event.target.value)}
-                  />
+                    <button className="ghost-button compact-button" type="button" onClick={() => setAssistantSidebarMode('none')}>
+                      收起
+                    </button>
+                  </div>
+                  {assistantSidebarMode === 'history' ? (
+                    <div className="conversation-list">
+                      {conversations.map((conversation) => (
+                        <button
+                          key={conversation.id}
+                          className={conversation.id === activeConversationId ? 'conversation-item active' : 'conversation-item'}
+                          onClick={() => void handleSelectConversation(conversation.id)}
+                          type="button"
+                        >
+                          <strong>{conversation.title}</strong>
+                          <span>{conversation.paperTitle || '未命名论文'}</span>
+                          <span>{conversation.messageCount} 条消息</span>
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="conversation-list current-conversation-list">
+                      {activeConversation ? (
+                        <div className="conversation-item active current-conversation-card">
+                          <strong>{activeConversation.title}</strong>
+                          <span>{activeConversation.paperTitle || '未命名论文'}</span>
+                          <span>{messages.length} 条消息</span>
+                        </div>
+                      ) : (
+                        <div className="empty-state">当前还没有选中的会话。</div>
+                      )}
+                    </div>
+                  )}
+                </div>
+                )}
+                <div className="chat-thread assistant-stream">
+                  {messages.length ? messages.map((message) => (
+                    <article key={message.id} className={`chat-message ${message.role} ${message.status ?? 'done'}`}>
+                      <div className="chat-message-row">
+                        <div className={`chat-avatar ${message.role}`}>
+                          {message.role === 'user' ? '你' : 'AI'}
+                        </div>
+                        <div className="chat-message-content">
+                          <div className="chat-message-meta">
+                            <span>{message.role === 'user' ? '你' : '论文助手'}</span>
+                            <time>{new Date(message.createdAt).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}</time>
+                            {message.status === 'streaming' ? <em>生成中</em> : null}
+                          </div>
+                          <div className="chat-message-body">
+                            {renderMarkdownSnippet(message.content || (message.status === 'streaming' ? '正在思考...' : ''))}
+                          </div>
+                          {message.citations?.length ? <div className="chat-message-citations">{message.citations.join(' · ')}</div> : null}
+                          {message.imageEvidence?.length ? (
+                            <div className="chat-image-evidence-list">
+                              {message.imageEvidence.map((item) => (
+                                <button
+                                  key={`${message.id}-${item.id}`}
+                                  className="chat-image-evidence"
+                                  type="button"
+                                  onClick={() => {
+                                    scrollToPage(item.page)
+                                    setActivePanel('figures')
+                                  }}
+                                >
+                                  <img src={item.remoteUrl || item.src} alt={item.caption || `P.${item.page} image evidence`} />
+                                  <div>
+                                    <strong>P.{item.page}</strong>
+                                    <span>{item.caption || '图片证据'}</span>
+                                  </div>
+                                </button>
+                              ))}
+                            </div>
+                          ) : null}
+                        </div>
+                      </div>
+                    </article>
+                  )) : null}
+                </div>
+                <div className="chat-composer docked-composer">
+                  <div className="chat-surface">
+                    <div className="chat-actions">
+                      <button className="ghost-button compact-button" type="button" onClick={handleClearAssistantFeed}>
+                        新会话
+                      </button>
+                      <button className="ghost-button compact-button" onClick={() => void handleSummarizePaper()}>
+                        {isSummarizing ? '总结中...' : '总结当前论文'}
+                      </button>
+                    </div>
+                    <textarea
+                      ref={chatTextareaRef}
+                      rows={1}
+                      value={chatInput}
+                      placeholder="输入问题并结合当前会话继续追问"
+                      onChange={(event) => setChatInput(event.target.value)}
+                      onKeyDown={(event) => {
+                        if (event.nativeEvent.isComposing) {
+                          return
+                        }
+
+                        if (event.key === 'Enter' && !event.shiftKey) {
+                          event.preventDefault()
+                          void handleAsk()
+                        }
+                      }}
+                    />
+                  </div>
+                  <div className="chat-toolbar">
+                    <div className="chat-toolbar-meta">
+                      <button className="ghost-button compact-button history-toggle-button" type="button" aria-label="历史会话" onClick={handleOpenConversationHistory}>
+                        历史会话
+                      </button>
+                      <button className="chat-library-pill" type="button" onClick={handleToggleCurrentConversation}>
+                        <span className="chat-library-pill-icon">▤</span>
+                        <span>{activeConversation ? '当前会话' : '当前会话'}</span>
+                      </button>
+                    </div>
+                    <button className="chat-send-button" onClick={() => void handleAsk()} aria-label={isAsking ? '思考中' : '发送'}>
+                      <span>{isAsking ? '…' : '↑'}</span>
+                    </button>
+                  </div>
                   {chatError ? <p className="chat-status error">{chatError}</p> : null}
-                  <button className="primary-button wide-button" onClick={() => void handleAsk()}>
-                    {isAsking ? '思考中...' : '发送'}
-                  </button>
                 </div>
               </div>
             )}
@@ -1064,7 +1460,7 @@ function App() {
               </div>
             )}
           </section>
-        </aside>
+        </section>
 
         <section className="reader-panel">
           <div className="reader-toolbar">
@@ -1119,6 +1515,47 @@ function App() {
         </section>
       </main>
 
+      {isImportOpen && (
+        <div className="settings-backdrop" onClick={() => setIsImportOpen(false)}>
+          <aside className="settings-drawer import-modal" onClick={(event) => event.stopPropagation()}>
+            <div className="settings-header">
+              <div>
+                <div className="eyebrow">Import</div>
+                <h3>导入论文</h3>
+              </div>
+              <button className="icon-button" onClick={() => setIsImportOpen(false)}>
+                关闭
+              </button>
+            </div>
+
+            <div className="settings-body">
+              <label>
+                直接上传 PDF
+                <input
+                  type="file"
+                  accept="application/pdf"
+                  onChange={(event) => setSelectedFile(event.target.files?.[0] ?? null)}
+                />
+              </label>
+              <label>
+                本地 PDF 路径
+                <input value={filePath} onChange={(event) => setFilePath(event.target.value)} />
+              </label>
+              <label>
+                同步目录
+                <input value={folderPath} onChange={(event) => setFolderPath(event.target.value)} />
+              </label>
+            </div>
+
+            <div className="settings-footer">
+              <button className="primary-button wide-button footer-button" onClick={() => void handleImport()} type="button">
+                开始导入
+              </button>
+            </div>
+          </aside>
+        </div>
+      )}
+
       {isSettingsOpen && (
         <div className="settings-backdrop" onClick={() => setIsSettingsOpen(false)}>
           <aside className="settings-drawer" onClick={(event) => event.stopPropagation()}>
@@ -1146,6 +1583,22 @@ function App() {
                   value={settings.model}
                   onChange={(event) => setSettings({ ...settings, model: event.target.value })}
                 />
+              </label>
+              <label>
+                OpenAI 接口模式
+                <select
+                  value={settings.openaiApiMode}
+                  onChange={(event) =>
+                    setSettings({
+                      ...settings,
+                      openaiApiMode: event.target.value as SettingsState['openaiApiMode'],
+                    })
+                  }
+                >
+                  <option value="chat">chat</option>
+                  <option value="responses">responses</option>
+                </select>
+                <p className="settings-hint">`chat` 使用 `/chat/completions`，`responses` 使用 `/responses`。</p>
               </label>
               <label>
                 API Base URL
@@ -1300,7 +1753,19 @@ function App() {
             </div>
 
             <div className="settings-footer">
-              <button className="primary-button wide-button footer-button" onClick={() => void handleSaveSettings()}>
+              <div className="settings-test-block">
+                <button className="ghost-button wide-button footer-button" onClick={() => void handleTestModel()} type="button">
+                  {isTestingModel ? '测试中...' : '测试模型连通性'}
+                </button>
+                {modelTestError ? <p className="chat-status error">{modelTestError}</p> : null}
+                {modelTestResult ? (
+                  <p className="settings-hint success-text">
+                    已连通 {modelTestResult.provider} / {modelTestResult.model}。模型回复：{modelTestResult.reply}
+                    {modelTestResult.payloadPreview ? `；响应摘要：${modelTestResult.payloadPreview}` : ''}
+                  </p>
+                ) : null}
+              </div>
+              <button className="primary-button wide-button footer-button" onClick={() => void handleSaveSettings()} type="button">
                 保存配置
               </button>
             </div>
