@@ -15,11 +15,13 @@ import {
   fetchLibraryDocuments,
   fetchPaperDocument,
   fetchSettings,
+  fetchTaskFeed,
   retryImportTask,
   saveSettings,
   selectLibraryDocument,
   streamPaperQuestion,
   streamPaperSummary,
+  subscribeTaskFeed,
   testModelConnection,
   uploadAndImportPdf,
 } from './lib/api'
@@ -571,14 +573,16 @@ function App() {
   useEffect(() => {
     const bootstrap = async () => {
       try {
-        const [document, storedSettings, library] = await Promise.all([
+        const [document, storedSettings, library, tasks] = await Promise.all([
           fetchPaperDocument(),
           fetchSettings(),
           fetchLibraryDocuments(),
+          fetchTaskFeed(),
         ])
         applyDocument(document)
         setSettings(storedSettings)
         setLibraryDocuments(library)
+        setTaskFeed(tasks)
         const condaResponse = await fetchCondaEnvironments()
         setCondaEnvs(condaResponse.envs)
         setCondaEnvError(condaResponse.error)
@@ -589,6 +593,31 @@ function App() {
     }
 
     void bootstrap()
+  }, [])
+
+  useEffect(() => {
+    let isDisposed = false
+
+    const syncLibrary = async () => {
+      try {
+        const library = await fetchLibraryDocuments()
+        if (!isDisposed) {
+          setLibraryDocuments(library)
+        }
+      } catch {
+        // ignore transient refresh errors from the task stream
+      }
+    }
+
+    const unsubscribe = subscribeTaskFeed((tasks) => {
+      setTaskFeed(tasks)
+      void syncLibrary()
+    })
+
+    return () => {
+      isDisposed = true
+      unsubscribe()
+    }
   }, [])
 
   useEffect(() => {

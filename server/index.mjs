@@ -1059,6 +1059,7 @@ const buildRagIndex = (artifactDir, { taskId, settings }) => new Promise((resolv
       return
     }
 
+    const ragStatus = getRagStatus(artifactDir)
     const lastJsonLine = stdout
       .split(/\r?\n/)
       .map((line) => line.trim())
@@ -1066,11 +1067,23 @@ const buildRagIndex = (artifactDir, { taskId, settings }) => new Promise((resolv
       .at(-1)
 
     if (!lastJsonLine) {
-      resolve({ ok: true, ...getRagStatus(artifactDir) })
+      resolve({ ok: true, ...ragStatus })
       return
     }
 
-    resolve(JSON.parse(lastJsonLine))
+    try {
+      const parsed = JSON.parse(lastJsonLine)
+      resolve({ ...ragStatus, ...parsed })
+    } catch (error) {
+      if (ragStatus.indexed) {
+        if (taskId) {
+          appendTaskLog(taskId, `RAG 构建结果解析失败，已根据落盘产物判定成功: ${error.message}`, { status: 'ready' })
+        }
+        resolve({ ok: true, ...ragStatus, parseWarning: error.message })
+        return
+      }
+      reject(error)
+    }
   })
 })
 
