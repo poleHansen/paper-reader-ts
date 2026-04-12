@@ -1214,7 +1214,7 @@ function App() {
     setChatError('')
     setActivePanel('assistant')
     setAssistantSidebarMode('none')
-    const summaryPrompt = `请总结论文《${paperTitle}》，并说明核心创新、整体架构、关键方法机制与实验结果。`
+    const summaryPrompt = `请总结论文《${paperTitle}》。整体结构按既定大纲输出，但每一节内部内容请根据论文实际证据灵活组织，不要默认固定三点贡献，也不要机械写成模块一模块二模块三。`
     const conversationId = await ensureConversation(summaryPrompt)
     const userMessage: ChatMessage = {
       id: `local-user-${Date.now()}`,
