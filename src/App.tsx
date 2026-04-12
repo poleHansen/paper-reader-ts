@@ -1391,6 +1391,15 @@ function App() {
                 <div className="chat-composer docked-composer">
                   <div className="chat-surface">
                     <div className="chat-actions">
+                      <div className="chat-actions-main">
+                        <button className="ghost-button compact-button history-toggle-button" type="button" aria-label="历史会话" onClick={handleOpenConversationHistory}>
+                          历史会话
+                        </button>
+                        <button className="chat-library-pill" type="button" onClick={handleToggleCurrentConversation}>
+                          <span className="chat-library-pill-icon">▤</span>
+                          <span>{activeConversation ? '当前会话' : '当前会话'}</span>
+                        </button>
+                      </div>
                       <button className="ghost-button compact-button" type="button" onClick={handleClearAssistantFeed}>
                         新会话
                       </button>
@@ -1398,37 +1407,28 @@ function App() {
                         {isSummarizing ? '总结中...' : '总结当前论文'}
                       </button>
                     </div>
-                    <textarea
-                      ref={chatTextareaRef}
-                      rows={1}
-                      value={chatInput}
-                      placeholder="输入问题并结合当前会话继续追问"
-                      onChange={(event) => setChatInput(event.target.value)}
-                      onKeyDown={(event) => {
-                        if (event.nativeEvent.isComposing) {
-                          return
-                        }
+                    <div className="chat-input-row">
+                      <textarea
+                        ref={chatTextareaRef}
+                        rows={1}
+                        value={chatInput}
+                        placeholder="输入问题并结合当前会话继续追问"
+                        onChange={(event) => setChatInput(event.target.value)}
+                        onKeyDown={(event) => {
+                          if (event.nativeEvent.isComposing) {
+                            return
+                          }
 
-                        if (event.key === 'Enter' && !event.shiftKey) {
-                          event.preventDefault()
-                          void handleAsk()
-                        }
-                      }}
-                    />
-                  </div>
-                  <div className="chat-toolbar">
-                    <div className="chat-toolbar-meta">
-                      <button className="ghost-button compact-button history-toggle-button" type="button" aria-label="历史会话" onClick={handleOpenConversationHistory}>
-                        历史会话
-                      </button>
-                      <button className="chat-library-pill" type="button" onClick={handleToggleCurrentConversation}>
-                        <span className="chat-library-pill-icon">▤</span>
-                        <span>{activeConversation ? '当前会话' : '当前会话'}</span>
+                          if (event.key === 'Enter' && !event.shiftKey) {
+                            event.preventDefault()
+                            void handleAsk()
+                          }
+                        }}
+                      />
+                      <button className="chat-send-button" onClick={() => void handleAsk()} aria-label={isAsking ? '思考中' : '发送'}>
+                        <span>{isAsking ? '…' : '↑'}</span>
                       </button>
                     </div>
-                    <button className="chat-send-button" onClick={() => void handleAsk()} aria-label={isAsking ? '思考中' : '发送'}>
-                      <span>{isAsking ? '…' : '↑'}</span>
-                    </button>
                   </div>
                   {chatError ? <p className="chat-status error">{chatError}</p> : null}
                 </div>
