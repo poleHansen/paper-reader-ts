@@ -1,4 +1,4 @@
-import { Component, useEffect, useMemo, useRef, useState } from 'react'
+import { Component, memo, useEffect, useMemo, useRef, useState } from 'react'
 import mermaid from 'mermaid'
 import ReactMarkdown from 'react-markdown'
 import rehypeRaw from 'rehype-raw'
@@ -229,6 +229,102 @@ const MarkdownTable = ({ children }: { children?: React.ReactNode }) => (
   </div>
 )
 
+type ChatComposerProps = {
+  value: string
+  isAsking: boolean
+  isSummarizing: boolean
+  activeConversationLabel: string
+  onSubmit: (question: string) => void
+  onClear: () => void
+  onSummarize: () => void
+  onOpenHistory: () => void
+  onToggleCurrentConversation: () => void
+}
+
+const ChatComposer = memo(({
+  value,
+  isAsking,
+  isSummarizing,
+  activeConversationLabel,
+  onSubmit,
+  onClear,
+  onSummarize,
+  onOpenHistory,
+  onToggleCurrentConversation,
+}: ChatComposerProps) => {
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null)
+  const [draft, setDraft] = useState(value)
+
+  useEffect(() => {
+    setDraft(value)
+  }, [value])
+
+  useEffect(() => {
+    const textarea = textareaRef.current
+    if (!textarea) {
+      return
+    }
+
+    textarea.style.height = 'auto'
+    textarea.style.height = `${textarea.scrollHeight}px`
+  }, [draft])
+
+  const handleSubmit = () => {
+    const nextQuestion = draft.trim()
+    if (!nextQuestion || isAsking) {
+      return
+    }
+
+    onSubmit(nextQuestion)
+  }
+
+  return (
+    <div className="chat-composer docked-composer">
+      <div className="chat-surface">
+        <div className="chat-actions">
+          <div className="chat-actions-main">
+            <button className="ghost-button compact-button history-toggle-button" type="button" aria-label="历史会话" onClick={onOpenHistory}>
+              历史会话
+            </button>
+            <button className="chat-library-pill" type="button" onClick={onToggleCurrentConversation}>
+              <span className="chat-library-pill-icon">▤</span>
+              <span>{activeConversationLabel}</span>
+            </button>
+          </div>
+          <button className="ghost-button compact-button" type="button" onClick={onClear}>
+            新会话
+          </button>
+          <button className="ghost-button compact-button" onClick={onSummarize}>
+            {isSummarizing ? '总结中...' : '总结当前论文'}
+          </button>
+        </div>
+        <div className="chat-input-row">
+          <textarea
+            ref={textareaRef}
+            rows={1}
+            value={draft}
+            placeholder="输入问题并结合当前会话继续追问"
+            onChange={(event) => setDraft(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.nativeEvent.isComposing) {
+                return
+              }
+
+              if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault()
+                handleSubmit()
+              }
+            }}
+          />
+          <button className="chat-send-button" onClick={handleSubmit} aria-label={isAsking ? '思考中' : '发送'}>
+            <span>{isAsking ? '…' : '↑'}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+})
+
 const renderMarkdownSnippet = (source: string) => {
   const normalized = normalizeMarkdown(source)
 
@@ -438,7 +534,6 @@ function App() {
   const outlineContainerRef = useRef<HTMLDivElement | null>(null)
   const outlineItemRefs = useRef<Record<string, HTMLButtonElement | null>>({})
   const headingObserverRef = useRef<IntersectionObserver | null>(null)
-  const chatTextareaRef = useRef<HTMLTextAreaElement | null>(null)
   const [pages, setPages] = useState<Page[]>([])
   const [outline, setOutline] = useState<OutlineItem[]>([])
   const [figures, setFigures] = useState<FigureItem[]>([])
@@ -477,16 +572,6 @@ function App() {
     () => conversations.find((conversation) => conversation.id === activeConversationId) ?? null,
     [conversations, activeConversationId],
   )
-
-  useEffect(() => {
-    const textarea = chatTextareaRef.current
-    if (!textarea) {
-      return
-    }
-
-    textarea.style.height = 'auto'
-    textarea.style.height = `${textarea.scrollHeight}px`
-  }, [chatInput])
 
   const toHistoryMessages = (items: ChatMessage[]): ConversationRequestMessage[] => {
     return items
@@ -1023,8 +1108,8 @@ function App() {
     }
   }
 
-  const handleAsk = async () => {
-    if (!chatInput.trim() || isAsking) {
+  const handleAsk = async (queuedQuestion: string) => {
+    if (!queuedQuestion.trim() || isAsking) {
       return
     }
 
@@ -1032,7 +1117,6 @@ function App() {
     setChatError('')
     setActivePanel('assistant')
     setAssistantSidebarMode('none')
-    const queuedQuestion = chatInput.trim()
     const conversationId = await ensureConversation(queuedQuestion)
     const userMessage: ChatMessage = {
       id: `local-user-${Date.now()}`,
@@ -1388,50 +1472,22 @@ function App() {
                     </article>
                   )) : null}
                 </div>
-                <div className="chat-composer docked-composer">
-                  <div className="chat-surface">
-                    <div className="chat-actions">
-                      <div className="chat-actions-main">
-                        <button className="ghost-button compact-button history-toggle-button" type="button" aria-label="历史会话" onClick={handleOpenConversationHistory}>
-                          历史会话
-                        </button>
-                        <button className="chat-library-pill" type="button" onClick={handleToggleCurrentConversation}>
-                          <span className="chat-library-pill-icon">▤</span>
-                          <span>{activeConversation ? '当前会话' : '当前会话'}</span>
-                        </button>
-                      </div>
-                      <button className="ghost-button compact-button" type="button" onClick={handleClearAssistantFeed}>
-                        新会话
-                      </button>
-                      <button className="ghost-button compact-button" onClick={() => void handleSummarizePaper()}>
-                        {isSummarizing ? '总结中...' : '总结当前论文'}
-                      </button>
-                    </div>
-                    <div className="chat-input-row">
-                      <textarea
-                        ref={chatTextareaRef}
-                        rows={1}
-                        value={chatInput}
-                        placeholder="输入问题并结合当前会话继续追问"
-                        onChange={(event) => setChatInput(event.target.value)}
-                        onKeyDown={(event) => {
-                          if (event.nativeEvent.isComposing) {
-                            return
-                          }
-
-                          if (event.key === 'Enter' && !event.shiftKey) {
-                            event.preventDefault()
-                            void handleAsk()
-                          }
-                        }}
-                      />
-                      <button className="chat-send-button" onClick={() => void handleAsk()} aria-label={isAsking ? '思考中' : '发送'}>
-                        <span>{isAsking ? '…' : '↑'}</span>
-                      </button>
-                    </div>
-                  </div>
+                <ChatComposer
+                  value={chatInput}
+                  isAsking={isAsking}
+                  isSummarizing={isSummarizing}
+                  activeConversationLabel="当前会话"
+                  onSubmit={(question) => {
+                    void handleAsk(question)
+                  }}
+                  onClear={handleClearAssistantFeed}
+                  onSummarize={() => {
+                    void handleSummarizePaper()
+                  }}
+                  onOpenHistory={handleOpenConversationHistory}
+                  onToggleCurrentConversation={handleToggleCurrentConversation}
+                />
                   {chatError ? <p className="chat-status error">{chatError}</p> : null}
-                </div>
               </div>
             )}
 
