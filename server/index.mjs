@@ -412,10 +412,6 @@ const extractStreamDelta = (payload) => {
     return ''
   }
 
-  if (typeof payload.delta === 'string' && payload.delta) {
-    return payload.delta
-  }
-
   const choices = Array.isArray(payload.choices) ? payload.choices : []
   for (const choice of choices) {
     if (typeof choice?.delta?.content === 'string' && choice.delta.content) {
@@ -440,29 +436,14 @@ const extractStreamDelta = (payload) => {
     }
   }
 
-  if (typeof payload.output_text === 'string' && payload.output_text) {
-    return payload.output_text
-  }
-
-  const output = Array.isArray(payload.output) ? payload.output : []
-  for (const item of output) {
-    const content = Array.isArray(item?.content) ? item.content : []
-    for (const block of content) {
-      if (typeof block?.text === 'string' && block.text) {
-        return block.text
-      }
-      if (typeof block?.output_text === 'string' && block.output_text) {
-        return block.output_text
-      }
-    }
-  }
-
-  if (typeof payload?.text === 'string' && payload.text) {
-    return payload.text
+  if (typeof payload.delta === 'string' && payload.delta) {
+    return payload.delta
   }
 
   return ''
 }
+
+const stripThinkBlocks = (text) => String(text || '').replace(/<think>[\s\S]*?<\/think>/g, '')
 
 const writeJsonLine = (res, payload) => {
   res.write(`${JSON.stringify(payload)}\n`)
@@ -554,16 +535,17 @@ const pipeModelStream = async ({ response, res, meta, conversationId, assistantM
       }
 
       if (data === '[DONE]') {
+        const finalText = stripThinkBlocks(accumulatedText)
         persistAssistantMessage((message) => ({
           ...message,
-          content: accumulatedText,
+          content: finalText,
           status: 'done',
           citations: meta.citations ?? message.citations,
           mode: meta.mode ?? message.mode,
         }))
         writeJsonLine(res, {
           type: 'done',
-          answer: accumulatedText,
+          answer: finalText,
           citations: meta.citations,
           mode: meta.mode,
           paperTitle: meta.paperTitle,
@@ -581,9 +563,10 @@ const pipeModelStream = async ({ response, res, meta, conversationId, assistantM
         }
 
         accumulatedText += delta
+        const streamedAnswer = stripThinkBlocks(accumulatedText)
         persistAssistantMessage((message) => ({
           ...message,
-          content: accumulatedText,
+          content: streamedAnswer,
           status: 'streaming',
           citations: meta.citations ?? message.citations,
           mode: meta.mode ?? message.mode,
@@ -591,7 +574,7 @@ const pipeModelStream = async ({ response, res, meta, conversationId, assistantM
         writeJsonLine(res, {
           type: 'delta',
           delta,
-          answer: accumulatedText,
+          answer: streamedAnswer,
         })
       } catch {
         continue
@@ -607,9 +590,10 @@ const pipeModelStream = async ({ response, res, meta, conversationId, assistantM
         const delta = extractStreamDelta(payload)
         if (delta) {
           accumulatedText += delta
+          const streamedAnswer = stripThinkBlocks(accumulatedText)
           persistAssistantMessage((message) => ({
             ...message,
-            content: accumulatedText,
+            content: streamedAnswer,
             status: 'streaming',
             citations: meta.citations ?? message.citations,
             mode: meta.mode ?? message.mode,
@@ -617,7 +601,7 @@ const pipeModelStream = async ({ response, res, meta, conversationId, assistantM
           writeJsonLine(res, {
             type: 'delta',
             delta,
-            answer: accumulatedText,
+            answer: streamedAnswer,
           })
         }
       } catch {
@@ -626,16 +610,17 @@ const pipeModelStream = async ({ response, res, meta, conversationId, assistantM
     }
   }
 
+  const finalText = stripThinkBlocks(accumulatedText)
   persistAssistantMessage((message) => ({
     ...message,
-    content: accumulatedText,
+    content: finalText,
     status: 'done',
     citations: meta.citations ?? message.citations,
     mode: meta.mode ?? message.mode,
   }))
   writeJsonLine(res, {
     type: 'done',
-    answer: accumulatedText,
+    answer: finalText,
     citations: meta.citations,
     mode: meta.mode,
     paperTitle: meta.paperTitle,
