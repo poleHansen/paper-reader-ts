@@ -407,7 +407,7 @@ const createStreamingRequestBody = ({ settings, systemPrompt, userPrompt, messag
   }
 }
 
-const extractStreamDelta = (payload) => {
+const extractChatStreamDelta = (payload) => {
   if (!payload || typeof payload !== 'object') {
     return ''
   }
@@ -441,6 +441,38 @@ const extractStreamDelta = (payload) => {
   }
 
   return ''
+}
+
+const extractResponsesStreamDelta = (payload) => {
+  if (!payload || typeof payload !== 'object') {
+    return ''
+  }
+
+  if (payload.type === 'response.output_text.delta' && typeof payload.delta === 'string' && payload.delta) {
+    return payload.delta
+  }
+
+  if (typeof payload.output_text === 'string' && payload.output_text) {
+    return payload.output_text
+  }
+
+  if (typeof payload.text === 'string' && payload.text) {
+    return payload.text
+  }
+
+  if (typeof payload.delta === 'string' && payload.delta) {
+    return payload.delta
+  }
+
+  return ''
+}
+
+const extractStreamDelta = (settings, payload) => {
+  if (settings.openaiApiMode === 'responses') {
+    return extractResponsesStreamDelta(payload)
+  }
+
+  return extractChatStreamDelta(payload)
 }
 
 const stripThinkBlocks = (text) => String(text || '').replace(/<think>[\s\S]*?<\/think>/g, '')
@@ -490,7 +522,7 @@ const postChatCompletionStream = async (settings, body, contextLabel) => {
   )
 }
 
-const pipeModelStream = async ({ response, res, meta, conversationId, assistantMessageId }) => {
+const pipeModelStream = async ({ settings, response, res, meta, conversationId, assistantMessageId }) => {
   const decoder = new TextDecoder('utf-8')
   let buffer = ''
   let accumulatedText = ''
@@ -557,7 +589,7 @@ const pipeModelStream = async ({ response, res, meta, conversationId, assistantM
 
       try {
         const payload = JSON.parse(data)
-        const delta = extractStreamDelta(payload)
+        const delta = extractStreamDelta(settings, payload)
         if (!delta) {
           continue
         }
@@ -587,7 +619,7 @@ const pipeModelStream = async ({ response, res, meta, conversationId, assistantM
     if (data && data !== '[DONE]') {
       try {
         const payload = JSON.parse(data)
-        const delta = extractStreamDelta(payload)
+        const delta = extractStreamDelta(settings, payload)
         if (delta) {
           accumulatedText += delta
           const streamedAnswer = stripThinkBlocks(accumulatedText)
@@ -886,6 +918,42 @@ const getDocumentMarkdownPath = (artifactDir) => {
 
   const markdownName = files.find((name) => /\.md$/i.test(name))
   return markdownName ? path.join(artifactDir, markdownName) : ''
+}
+
+const getDocumentPdfPath = (artifactDir) => {
+  if (!artifactDir || !fs.existsSync(artifactDir) || !fs.existsSync(uploadsDir)) {
+    return ''
+  }
+
+  const documentBaseName = getDocumentBaseName(artifactDir).toLowerCase()
+  const files = fs.readdirSync(uploadsDir, { withFileTypes: true })
+    .filter((entry) => entry.isFile() && /\.pdf$/i.test(entry.name))
+    .map((entry) => entry.name)
+
+  const exactMatch = files.find((name) => path.parse(name).name.toLowerCase() === documentBaseName)
+  if (exactMatch) {
+    return path.join(uploadsDir, exactMatch)
+  }
+
+  const stripTimestampPrefix = (value) => value.replace(/^\d+-/, '')
+
+  const normalizedMatch = files.find((name) => {
+    const normalizedName = path.parse(stripTimestampPrefix(name)).name.toLowerCase()
+    return normalizedName === documentBaseName || normalizedName.includes(documentBaseName) || documentBaseName.includes(normalizedName)
+  })
+  if (normalizedMatch) {
+    return path.join(uploadsDir, normalizedMatch)
+  }
+
+  return ''
+}
+
+const toStaticUrl = (targetPath) => {
+  if (!targetPath || !fs.existsSync(targetPath)) {
+    return ''
+  }
+
+  return `/${path.relative(rootDir, targetPath).split(path.sep).join('/')}`
 }
 
 const getRagDir = (artifactDir) => path.join(artifactDir, 'rag')
@@ -1569,6 +1637,7 @@ const buildDocument = (artifactDir) => {
   const baseName = getDocumentBaseName(resolvedDocumentDir)
   const contentListPath = getDocumentContentListPath(resolvedDocumentDir)
   const markdownPath = getDocumentMarkdownPath(resolvedDocumentDir)
+  const pdfPath = getDocumentPdfPath(resolvedDocumentDir)
   const middleJsonPath = path.join(resolvedDocumentDir, `${baseName}_middle.json`)
   const pages = readJson(contentListPath)
   const pageMetas = readPageMetas(resolvedDocumentDir, baseName)
@@ -1622,6 +1691,7 @@ const buildDocument = (artifactDir) => {
     assetBasePath,
     paperTitle: baseName,
     markdown,
+    pdfUrl: toStaticUrl(pdfPath),
   }
 }
 
@@ -2110,6 +2180,7 @@ const streamPaperSummary = async ({ artifactDir, history = [], userPrompt, res, 
   }), 'paper summary request')
 
   await pipeModelStream({
+    settings,
     response,
     res,
     conversationId,
@@ -2395,6 +2466,7 @@ const streamChatCompletion = async ({ question, page, anchorId, artifactDir, use
   }), 'chat request')
 
   await pipeModelStream({
+    settings,
     response,
     res,
     conversationId,

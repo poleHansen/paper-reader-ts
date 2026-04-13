@@ -1029,6 +1029,18 @@ button {
   gap: 10px;
 }
 
+.segmented-switcher {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+}
+
+.segmented-switcher .tab {
+  flex: 0 0 auto;
+  min-width: 72px;
+}
+
 .continuous-mode-indicator {
   color: var(--muted);
 }
@@ -1051,6 +1063,16 @@ button {
 
 .markdown-canvas {
   min-height: 100%;
+}
+
+.pdf-canvas {
+  width: 100%;
+  min-height: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: 20px;
+  background: #f8fafc;
 }
 
 .paper-canvas h1,

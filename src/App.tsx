@@ -540,6 +540,8 @@ function App() {
   const [libraryDocuments, setLibraryDocuments] = useState<LibraryDocument[]>([])
   const [pageMetas, setPageMetas] = useState<PageMeta[]>([])
   const [markdown, setMarkdown] = useState('')
+  const [pdfUrl, setPdfUrl] = useState('')
+  const [readerMode, setReaderMode] = useState<'markdown' | 'pdf'>('markdown')
   const [taskFeed, setTaskFeed] = useState<ParseTask[]>([])
   const [conversations, setConversations] = useState<ConversationSummary[]>([])
   const [activeConversationId, setActiveConversationId] = useState('')
@@ -643,6 +645,7 @@ function App() {
     assetBasePath: string
     paperTitle: string
     markdown: string
+    pdfUrl: string
   }) => {
     setPages(document.pages)
     setOutline(document.outline)
@@ -652,6 +655,8 @@ function App() {
     setFolderPath(`${document.assetBasePath}/images`)
     setPaperTitle(document.paperTitle)
     setMarkdown(document.markdown)
+    setPdfUrl(document.pdfUrl)
+    setReaderMode(document.markdown ? 'markdown' : document.pdfUrl ? 'pdf' : 'markdown')
     setActivePage(1)
   }
 
@@ -1553,7 +1558,24 @@ function App() {
               <h3>{paperTitle}</h3>
             </div>
             <div className="page-switcher continuous-mode-indicator">
-              <span>连续阅读模式</span>
+              <div className="segmented-switcher">
+                <button
+                  className={readerMode === 'markdown' ? 'tab active' : 'tab'}
+                  type="button"
+                  onClick={() => setReaderMode('markdown')}
+                  disabled={!markdown}
+                >
+                  MD
+                </button>
+                <button
+                  className={readerMode === 'pdf' ? 'tab active' : 'tab'}
+                  type="button"
+                  onClick={() => setReaderMode('pdf')}
+                  disabled={!pdfUrl}
+                >
+                  PDF
+                </button>
+              </div>
               <strong>Page {activePage} / {pages.length || 1}</strong>
             </div>
           </div>
@@ -1561,8 +1583,9 @@ function App() {
           <div className="reader-body">
             <div className="paper-stage markdown-reader" ref={readerScrollRef}>
               {isBootstrapping ? <div className="canvas-placeholder">正在加载解析结果...</div> : null}
-              {!isBootstrapping && !markdown ? <div className="canvas-placeholder">当前没有可显示的文档内容。</div> : null}
-              {markdown ? (
+              {!isBootstrapping && readerMode === 'markdown' && !markdown ? <div className="canvas-placeholder">当前没有可显示的 Markdown 内容。</div> : null}
+              {!isBootstrapping && readerMode === 'pdf' && !pdfUrl ? <div className="canvas-placeholder">当前没有可显示的原始 PDF。</div> : null}
+              {readerMode === 'markdown' && markdown ? (
                 <article className="paper-canvas markdown-canvas">
                   <ReactMarkdown
                     remarkPlugins={[remarkGfm, remarkMath]}
@@ -1593,6 +1616,13 @@ function App() {
                     {renderedMarkdown}
                   </ReactMarkdown>
                 </article>
+              ) : null}
+              {readerMode === 'pdf' && pdfUrl ? (
+                <iframe
+                  className="paper-canvas pdf-canvas"
+                  src={pdfUrl}
+                  title={`${paperTitle} PDF`}
+                />
               ) : null}
             </div>
           </div>

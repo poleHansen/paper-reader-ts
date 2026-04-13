@@ -112,6 +112,7 @@ export type DocumentPayload = {
   assetBasePath: string
   paperTitle: string
   markdown: string
+  pdfUrl: string
 }
 
 export type LibraryDocument = {
