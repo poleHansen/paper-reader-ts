@@ -772,7 +772,6 @@ function App() {
     })
     setActiveConversationId(created.id)
     setMessages(created.messages)
-    setAssistantSidebarMode('current')
     setConversations((current) => {
       const exists = current.some((item) => item.id === created.id)
       if (exists) {

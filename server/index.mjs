@@ -844,6 +844,30 @@ const getDocumentBaseName = (artifactDir) => {
   return path.basename(artifactDir).replace(/_(content_list_v2|content_list)$/i, '')
 }
 
+const resolveDisplayPaperTitle = (value) => {
+  const source = String(value || '').trim()
+  if (!source) {
+    return ''
+  }
+
+  return path.parse(source).name.trim()
+}
+
+const getDocumentDisplayTitle = (artifactDir) => {
+  const metaPath = path.join(artifactDir, 'display_title.json')
+  if (!fs.existsSync(metaPath)) {
+    return getDocumentBaseName(artifactDir)
+  }
+
+  try {
+    const payload = readJson(metaPath)
+    const displayTitle = resolveDisplayPaperTitle(payload?.displayTitle || payload?.originalName || payload?.fileName)
+    return displayTitle || getDocumentBaseName(artifactDir)
+  } catch {
+    return getDocumentBaseName(artifactDir)
+  }
+}
+
 const getDocumentContentListPath = (artifactDir) => {
   if (!artifactDir || !fs.existsSync(artifactDir)) {
     return ''
@@ -1209,7 +1233,7 @@ const listKnowledgeDocuments = () => {
       const stats = fs.statSync(contentListPath)
       return {
         id: path.relative(rootDir, artifactDir).split(path.sep).join('/'),
-        paperTitle: getDocumentBaseName(artifactDir),
+        paperTitle: getDocumentDisplayTitle(artifactDir),
         artifactDir,
         assetBasePath: `/${path.relative(rootDir, artifactDir).split(path.sep).join('/')}`,
         updatedAt: stats.mtime.toISOString(),
@@ -1310,7 +1334,7 @@ const syncEnvironmentTask = (settings) => {
 
 const getLatestTask = (taskId) => tasks.find((task) => task.id === taskId)
 
-const startImportTask = (filePath, res) => {
+const startImportTask = (filePath, res, options = {}) => {
   if (!fs.existsSync(filePath)) {
     res.status(400).json({ error: `File not found: ${filePath}` })
     return
@@ -1318,19 +1342,23 @@ const startImportTask = (filePath, res) => {
 
   const settings = readSettings()
   const sourceName = path.basename(filePath)
+  const originalName = typeof options.originalName === 'string' && options.originalName.trim()
+    ? options.originalName.trim()
+    : sourceName
   const paperStem = path.parse(sourceName).name
   const paperId = `${slugifyPaperId(paperStem)}-${Date.now()}`
   const outputDir = path.join(settings.outputRoot, paperId)
   const task = {
     id: `task-${Date.now()}`,
-    title: `正在解析 ${sourceName}`,
-    detail: `已接收 ${sourceName}，准备启动 ${settings.executionMode} 解析。`,
+    title: `正在解析 ${originalName}`,
+    detail: `已接收 ${originalName}，准备启动 ${settings.executionMode} 解析。`,
     status: 'queued',
     timestamp: nowTime(),
     logs: [`输入文件: ${filePath}`],
     paperId,
     inputPath: filePath,
     outputDir,
+    originalName,
   }
 
   prependTask(task)
@@ -1421,6 +1449,18 @@ const startImportTask = (filePath, res) => {
     if (code === 0) {
       const currentTask = getLatestTask(task.id)
       const artifactDir = currentTask?.outputDir ? path.join(currentTask.outputDir, paperStem, 'auto') : ''
+
+      if (artifactDir && fs.existsSync(artifactDir) && currentTask?.originalName) {
+        try {
+          fs.writeFileSync(
+            path.join(artifactDir, 'display_title.json'),
+            JSON.stringify({ displayTitle: resolveDisplayPaperTitle(currentTask.originalName), originalName: currentTask.originalName }, null, 2),
+            'utf-8',
+          )
+        } catch (error) {
+          appendTaskLog(task.id, `写入展示标题失败: ${error.message}`)
+        }
+      }
 
       updateTask(task.id, (current) => ({
         ...current,
@@ -2545,7 +2585,7 @@ app.post('/api/import-upload', upload.single('paper'), (req, res) => {
     },
   }
 
-  startImportTask(finalPath, taskResponse)
+  startImportTask(finalPath, taskResponse, { originalName })
 })
 
 const syncImagesToGithub = (taskId, imageDir, settings) => {
