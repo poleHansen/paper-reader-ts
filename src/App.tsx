@@ -160,7 +160,11 @@ const buildOutlineHeadingMap = (outlineItems: OutlineItem[], headings: MarkdownH
 
 let mermaidInitialized = false
 
-const MermaidBlock = ({ value }: { value: string }) => {
+type PreviewPayload =
+  | { type: 'image'; src: string; alt: string }
+  | { type: 'mermaid'; svgMarkup: string; title: string }
+
+const MermaidBlock = ({ value, onPreview }: { value: string; onPreview?: (payload: PreviewPayload) => void }) => {
   const [svgMarkup, setSvgMarkup] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
 
@@ -220,7 +224,17 @@ const MermaidBlock = ({ value }: { value: string }) => {
     return <div className="mermaid-loading">正在渲染图表...</div>
   }
 
-  return <div className="mermaid-diagram" dangerouslySetInnerHTML={{ __html: svgMarkup }} />
+  return (
+    <button
+      className="mermaid-diagram"
+      type="button"
+      onClick={() => onPreview?.({ type: 'mermaid', svgMarkup, title: 'Mermaid 图表预览' })}
+      aria-label="点击放大查看图表"
+    >
+      <div dangerouslySetInnerHTML={{ __html: svgMarkup }} />
+      <span className="preview-hint">点击放大查看</span>
+    </button>
+  )
 }
 
 const MarkdownTable = ({ children }: { children?: React.ReactNode }) => (
@@ -408,16 +422,26 @@ const MarkdownImage = ({
   src = '',
   alt = '',
   assetBasePath,
+  onPreview,
 }: {
   src?: string
   alt?: string
   assetBasePath: string
+  onPreview?: (payload: PreviewPayload) => void
 }) => {
   const normalizedSrc = typeof src === 'string' ? resolveMarkdownAsset(src, assetBasePath) : src
 
   return (
     <figure className="markdown-image-block">
-      <img src={normalizedSrc} alt={alt} loading="lazy" />
+      <button
+        className="previewable-media"
+        type="button"
+        onClick={() => onPreview?.({ type: 'image', src: normalizedSrc, alt: alt || '图片预览' })}
+        aria-label="点击放大查看图片"
+      >
+        <img src={normalizedSrc} alt={alt} loading="lazy" />
+        <span className="preview-hint">点击放大查看</span>
+      </button>
       {alt ? <figcaption>{alt}</figcaption> : null}
     </figure>
   )
@@ -469,7 +493,7 @@ const getText = (items: unknown): string => {
     .trim()
 }
 
-const renderBlock = (block: Block, index: number, assetBasePath: string) => {
+const renderBlock = (block: Block, index: number, assetBasePath: string, onPreview?: (payload: PreviewPayload) => void) => {
   if (block.type === 'title') {
     const content = block.content as { title_content?: unknown; level?: number }
     const title = getText(content.title_content)
@@ -490,7 +514,15 @@ const renderBlock = (block: Block, index: number, assetBasePath: string) => {
     const src = `${assetBasePath}/${content.image_source?.path ?? ''}`
     return (
       <figure key={`image-${index}`} className="paper-figure">
-        <img src={src} alt={getText(content.image_caption) || 'paper figure'} />
+        <button
+          className="previewable-media"
+          type="button"
+          onClick={() => onPreview?.({ type: 'image', src, alt: getText(content.image_caption) || 'paper figure' })}
+          aria-label="点击放大查看图片"
+        >
+          <img src={src} alt={getText(content.image_caption) || 'paper figure'} />
+          <span className="preview-hint">点击放大查看</span>
+        </button>
         <figcaption>{getText(content.image_caption)}</figcaption>
       </figure>
     )
@@ -537,7 +569,23 @@ function App() {
   const [pages, setPages] = useState<Page[]>([])
   const [outline, setOutline] = useState<OutlineItem[]>([])
   const [figures, setFigures] = useState<FigureItem[]>([])
+  const [previewItem, setPreviewItem] = useState<PreviewPayload | null>(null)
   const [libraryDocuments, setLibraryDocuments] = useState<LibraryDocument[]>([])
+    useEffect(() => {
+      if (!previewItem) {
+        return
+      }
+
+      const handleKeyDown = (event: KeyboardEvent) => {
+        if (event.key === 'Escape') {
+          setPreviewItem(null)
+        }
+      }
+
+      window.addEventListener('keydown', handleKeyDown)
+      return () => window.removeEventListener('keydown', handleKeyDown)
+    }, [previewItem])
+
   const [pageMetas, setPageMetas] = useState<PageMeta[]>([])
   const [markdown, setMarkdown] = useState('')
   const [pdfUrl, setPdfUrl] = useState('')
@@ -1537,6 +1585,11 @@ function App() {
                     className="figure-item"
                     onClick={() => {
                       scrollToPage(item.page)
+                      setPreviewItem({
+                        type: 'image',
+                        src: item.src,
+                        alt: item.caption || `P.${item.page}`,
+                      })
                     }}
                   >
                     <img src={item.src} alt={item.caption} />
@@ -1593,7 +1646,7 @@ function App() {
                     components={{
                       table: ({ children }) => <MarkdownTable>{children}</MarkdownTable>,
                       img: ({ src = '', alt = '' }) => {
-                        return <MarkdownImage src={src} alt={alt} assetBasePath={assetBasePath} />
+                        return <MarkdownImage src={src} alt={alt} assetBasePath={assetBasePath} onPreview={setPreviewItem} />
                       },
                       h1: ({ children, ...props }) => renderMarkdownHeading(1, children, props),
                       h2: ({ children, ...props }) => renderMarkdownHeading(2, children, props),
@@ -1606,7 +1659,7 @@ function App() {
                         const codeText = String(children).replace(/\n$/, '')
 
                         if (language === 'mermaid') {
-                          return <MermaidBlock value={codeText} />
+                          return <MermaidBlock value={codeText} onPreview={setPreviewItem} />
                         }
 
                         return <code className={className} {...props}>{children}</code>
@@ -1886,6 +1939,34 @@ function App() {
           </aside>
         </div>
       )}
+
+      {previewItem ? (
+        <div className="media-preview-backdrop" onClick={() => setPreviewItem(null)}>
+          <div className="media-preview-modal" onClick={(event) => event.stopPropagation()}>
+            <button
+              className="media-preview-close"
+              type="button"
+              onClick={() => setPreviewItem(null)}
+              aria-label="关闭预览"
+            >
+              ×
+            </button>
+            <div className="media-preview-content">
+              {previewItem.type === 'image' ? (
+                <img className="media-preview-image" src={previewItem.src} alt={previewItem.alt} />
+              ) : (
+                <div
+                  className="media-preview-mermaid"
+                  dangerouslySetInnerHTML={{ __html: previewItem.svgMarkup }}
+                />
+              )}
+            </div>
+            <div className="media-preview-caption">
+              {previewItem.type === 'image' ? previewItem.alt : previewItem.title}
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }

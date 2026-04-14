@@ -1226,6 +1226,9 @@ button {
   background: rgba(255, 255, 255, 0.98);
   border: 1px solid rgba(15, 23, 42, 0.08);
   overflow: auto;
+  width: 100%;
+  text-align: left;
+  position: relative;
 }
 
 .mermaid-diagram svg {
@@ -1261,6 +1264,124 @@ button {
   border-radius: 24px;
   border: 1px solid rgba(15, 23, 42, 0.1);
   background: rgba(255, 255, 255, 1);
+}
+
+.previewable-media {
+  width: 100%;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  position: relative;
+  display: block;
+}
+
+.previewable-media img {
+  cursor: zoom-in;
+}
+
+.preview-hint {
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.72);
+  color: #fff;
+  font-size: 12px;
+  line-height: 1;
+  opacity: 0;
+  transition: opacity 180ms ease;
+  pointer-events: none;
+}
+
+.previewable-media:hover .preview-hint,
+.previewable-media:focus-visible .preview-hint,
+.mermaid-diagram:hover .preview-hint,
+.mermaid-diagram:focus-visible .preview-hint {
+  opacity: 1;
+}
+
+.media-preview-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(10px);
+}
+
+.media-preview-modal {
+  position: relative;
+  width: min(1200px, 100%);
+  max-height: calc(100vh - 48px);
+  padding: 20px 20px 14px;
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.98);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  box-shadow: 0 30px 80px rgba(15, 23, 42, 0.32);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.media-preview-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.08);
+  color: var(--text);
+  font-size: 28px;
+  line-height: 1;
+}
+
+.media-preview-content {
+  min-height: 0;
+  overflow: auto;
+  padding: 18px 8px 8px;
+}
+
+.media-preview-image,
+.media-preview-mermaid svg {
+  display: block;
+  max-width: 100%;
+  max-height: calc(100vh - 180px);
+  width: auto;
+  height: auto;
+  margin: 0 auto;
+  object-fit: contain;
+}
+
+.media-preview-mermaid {
+  min-width: fit-content;
+}
+
+.media-preview-caption {
+  color: var(--muted);
+  font-size: 14px;
+  text-align: center;
+}
+
+@media (max-width: 720px) {
+  .media-preview-backdrop {
+    padding: 12px;
+  }
+
+  .media-preview-modal {
+    max-height: calc(100vh - 24px);
+    padding: 18px 14px 12px;
+    border-radius: 22px;
+  }
+
+  .preview-hint {
+    opacity: 1;
+    font-size: 11px;
+  }
 }
 
 .markdown-image-block figcaption,
