@@ -34,6 +34,82 @@ type MarkdownHeadingEntry = {
   normalizedTitle: string
 }
 
+type OutlineTarget = {
+  id: string
+  page: number
+}
+
+const getOutlineAnchorId = (outlineId: string): string => `outline-anchor-${outlineId}`
+
+type ProviderPreset = {
+  label: string
+  provider: string
+  apiBaseUrl: string
+  openaiApiMode: SettingsState['openaiApiMode']
+  defaultModel: string
+  modelSuggestions: string[]
+  hint: string
+}
+
+type PreviewFigure = {
+  src: string
+  caption: string
+  page?: number
+}
+
+const providerPresets: ProviderPreset[] = [
+  {
+    label: 'OpenAI Compatible',
+    provider: 'OpenAI Compatible',
+    apiBaseUrl: 'https://api.openai.com/v1',
+    openaiApiMode: 'chat',
+    defaultModel: 'gpt-4.1-mini',
+    modelSuggestions: ['gpt-4.1-mini', 'gpt-4.1', 'gpt-4o-mini'],
+    hint: '通用 OpenAI 兼容接口。也适用于你自己的代理服务。',
+  },
+  {
+    label: 'Kimi',
+    provider: 'Kimi',
+    apiBaseUrl: 'https://api.moonshot.cn/v1',
+    openaiApiMode: 'chat',
+    defaultModel: 'moonshot-v1-8k',
+    modelSuggestions: ['moonshot-v1-8k', 'moonshot-v1-32k', 'moonshot-v1-128k'],
+    hint: 'Moonshot 官方 OpenAI 兼容入口，通常使用 chat 模式。',
+  },
+  {
+    label: 'DeepSeek',
+    provider: 'DeepSeek',
+    apiBaseUrl: 'https://api.deepseek.com/v1',
+    openaiApiMode: 'chat',
+    defaultModel: 'deepseek-chat',
+    modelSuggestions: ['deepseek-chat', 'deepseek-reasoner'],
+    hint: 'DeepSeek 官方 OpenAI 兼容入口，推荐先使用 chat 模式。',
+  },
+  {
+    label: '豆包',
+    provider: '豆包',
+    apiBaseUrl: 'https://ark.cn-beijing.volces.com/api/v3',
+    openaiApiMode: 'chat',
+    defaultModel: 'doubao-seed-1-6-250615',
+    modelSuggestions: ['doubao-seed-1-6-250615', 'doubao-1-5-pro-32k-250115', '填写你自己的 endpoint/model id'],
+    hint: '豆包通常走火山方舟兼容入口；如果你使用专属 endpoint，请保留这里的自定义 URL 和模型名。',
+  },
+  {
+    label: '自定义',
+    provider: '',
+    apiBaseUrl: '',
+    openaiApiMode: 'chat',
+    defaultModel: '',
+    modelSuggestions: [],
+    hint: '保留完全手动填写 provider、URL、模型名的方式。',
+  },
+]
+
+const findProviderPreset = (provider: string) => {
+  const normalizedProvider = provider.trim().toLowerCase()
+  return providerPresets.find((preset) => preset.provider.toLowerCase() === normalizedProvider)
+}
+
 const extractNodeText = (node: React.ReactNode): string => {
   if (typeof node === 'string' || typeof node === 'number') {
     return String(node)
@@ -70,6 +146,24 @@ const normalizeHeadingText = (value: string): string => {
     .replace(/&[a-z]+;/gi, ' ')
     .replace(/\s+/g, ' ')
     .trim()
+}
+
+const stripHeadingOrdinal = (value: string): string => {
+  return value
+    .replace(/^\s*(?:chapter|section|appendix)\s+[\p{L}\p{N}.:-]+\s*/giu, '')
+    .replace(/^\s*[\[(（【]?\s*(?:第\s*[一二三四五六七八九十百千\d]+\s*[章节部分]|[\divxlcm]+|\d+(?:\.\d+)*|[a-z](?:\.\d+)*)[\])）】.:：、\-\s]+/giu, '')
+    .trim()
+}
+
+const buildHeadingVariants = (value: string): string[] => {
+  const normalized = normalizeHeadingText(value)
+  const stripped = stripHeadingOrdinal(normalized)
+  return [...new Set([
+    normalized,
+    stripped,
+    normalized.replace(/\s+/g, ''),
+    stripped.replace(/\s+/g, ''),
+  ].filter(Boolean).map((item) => item.toLowerCase()))]
 }
 
 const slugifyHeading = (value: string): string => {
@@ -128,24 +222,30 @@ const buildOutlineHeadingMap = (outlineItems: OutlineItem[], headings: MarkdownH
   const headingBuckets = new Map<string, MarkdownHeadingEntry[]>()
 
   headings.forEach((heading) => {
-    const bucket = headingBuckets.get(heading.normalizedTitle)
-    if (bucket) {
-      bucket.push(heading)
-      return
-    }
+    buildHeadingVariants(heading.title).forEach((variant) => {
+      const bucket = headingBuckets.get(variant)
+      if (bucket) {
+        bucket.push(heading)
+        return
+      }
 
-    headingBuckets.set(heading.normalizedTitle, [heading])
+      headingBuckets.set(variant, [heading])
+    })
   })
 
   const usage = new Map<string, number>()
 
   return outlineItems.reduce<Record<string, string>>((accumulator, item) => {
-    const normalizedTitle = normalizeHeadingText(item.title).toLowerCase()
-    if (!normalizedTitle) {
+    const variants = buildHeadingVariants(item.title)
+    if (!variants.length) {
       return accumulator
     }
 
-    const matchingHeadings = headingBuckets.get(normalizedTitle)
+    const normalizedTitle = variants[0]
+    const matchingHeadings = variants
+      .map((variant) => headingBuckets.get(variant) ?? [])
+      .find((entries) => entries.length > 0)
+
     if (!matchingHeadings?.length) {
       return accumulator
     }
@@ -154,6 +254,51 @@ const buildOutlineHeadingMap = (outlineItems: OutlineItem[], headings: MarkdownH
     const heading = matchingHeadings[Math.min(nextIndex, matchingHeadings.length - 1)]
     usage.set(normalizedTitle, nextIndex + 1)
     accumulator[item.id] = heading.id
+    return accumulator
+  }, {})
+}
+
+const buildOutlineTargets = (
+  outlineItems: OutlineItem[],
+  outlineHeadingMap: Record<string, string>,
+): Record<string, OutlineTarget> => {
+  return outlineItems.reduce<Record<string, OutlineTarget>>((accumulator, item) => {
+    accumulator[item.id] = {
+      id: getOutlineAnchorId(item.id) || outlineHeadingMap[item.id] || `page-anchor-${item.page}`,
+      page: item.page,
+    }
+    return accumulator
+  }, {})
+}
+
+const buildPageTitleOutlineIds = (pages: Page[], outlineItems: OutlineItem[]): Record<string, string> => {
+  const outlineByPage = outlineItems.reduce<Record<number, OutlineItem[]>>((accumulator, item) => {
+    const bucket = accumulator[item.page]
+    if (bucket) {
+      bucket.push(item)
+    } else {
+      accumulator[item.page] = [item]
+    }
+    return accumulator
+  }, {})
+
+  return pages.reduce<Record<string, string>>((accumulator, pageBlocks, pageIndex) => {
+    const pageNumber = pageIndex + 1
+    const pageOutlineItems = outlineByPage[pageNumber] ?? []
+    let titleIndex = 0
+
+    pageBlocks.forEach((block, blockIndex) => {
+      if (block.type !== 'title') {
+        return
+      }
+
+      const outlineItem = pageOutlineItems[titleIndex]
+      if (outlineItem) {
+        accumulator[`${pageNumber}-${blockIndex}`] = outlineItem.id
+      }
+      titleIndex += 1
+    })
+
     return accumulator
   }, {})
 }
@@ -408,16 +553,24 @@ const MarkdownImage = ({
   src = '',
   alt = '',
   assetBasePath,
+  onPreview,
 }: {
   src?: string
   alt?: string
   assetBasePath: string
+  onPreview?: (figure: PreviewFigure) => void
 }) => {
   const normalizedSrc = typeof src === 'string' ? resolveMarkdownAsset(src, assetBasePath) : src
 
   return (
     <figure className="markdown-image-block">
-      <img src={normalizedSrc} alt={alt} loading="lazy" />
+      <button
+        type="button"
+        className="image-preview-trigger"
+        onClick={() => onPreview?.({ src: normalizedSrc, caption: alt })}
+      >
+        <img src={normalizedSrc} alt={alt} loading="lazy" />
+      </button>
       {alt ? <figcaption>{alt}</figcaption> : null}
     </figure>
   )
@@ -469,12 +622,12 @@ const getText = (items: unknown): string => {
     .trim()
 }
 
-const renderBlock = (block: Block, index: number, assetBasePath: string) => {
+const renderBlock = (block: Block, index: number, assetBasePath: string, outlineAnchorId?: string) => {
   if (block.type === 'title') {
     const content = block.content as { title_content?: unknown; level?: number }
     const title = getText(content.title_content)
     const HeadingTag = content.level === 1 ? 'h1' : content.level === 2 ? 'h2' : 'h3'
-    return <HeadingTag key={`title-${index}`}>{title}</HeadingTag>
+    return <HeadingTag key={`title-${index}`} id={outlineAnchorId}>{title}</HeadingTag>
   }
 
   if (block.type === 'paragraph') {
@@ -497,6 +650,37 @@ const renderBlock = (block: Block, index: number, assetBasePath: string) => {
   }
 
   return null
+}
+
+const renderBlockWithPreview = (
+  block: Block,
+  index: number,
+  assetBasePath: string,
+  onPreview: (figure: PreviewFigure) => void,
+  outlineAnchorId?: string,
+) => {
+  if (block.type === 'image') {
+    const content = block.content as {
+      image_source?: { path?: string }
+      image_caption?: unknown
+    }
+    const caption = getText(content.image_caption)
+    const src = `${assetBasePath}/${content.image_source?.path ?? ''}`
+    return (
+      <figure key={`image-${index}`} className="paper-figure">
+        <button
+          type="button"
+          className="image-preview-trigger"
+          onClick={() => onPreview({ src, caption: caption || 'paper figure' })}
+        >
+          <img src={src} alt={caption || 'paper figure'} />
+        </button>
+        <figcaption>{caption}</figcaption>
+      </figure>
+    )
+  }
+
+  return renderBlock(block, index, assetBasePath, outlineAnchorId)
 }
 
 class AppErrorBoundary extends Component<{ children: React.ReactNode }, { hasError: boolean; message: string }> {
@@ -552,6 +736,7 @@ function App() {
   const [activeOutlineId, setActiveOutlineId] = useState('')
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [isImportOpen, setIsImportOpen] = useState(false)
+  const [previewFigure, setPreviewFigure] = useState<PreviewFigure | null>(null)
   const [settings, setSettings] = useState(defaultSettings)
   const [bootstrapError, setBootstrapError] = useState('')
   const [assetBasePath, setAssetBasePath] = useState('/工业缺陷零样本分割2026/auto')
@@ -570,6 +755,9 @@ function App() {
   const [isTestingModel, setIsTestingModel] = useState(false)
   const [modelTestResult, setModelTestResult] = useState<ModelTestResponse | null>(null)
   const [modelTestError, setModelTestError] = useState('')
+  const activeProviderPreset = findProviderPreset(settings.provider)
+  const providerSelectValue = activeProviderPreset?.provider || '__custom__'
+  const suggestedModels = activeProviderPreset?.modelSuggestions ?? []
   const activeConversation = useMemo(
     () => conversations.find((conversation) => conversation.id === activeConversationId) ?? null,
     [conversations, activeConversationId],
@@ -658,6 +846,15 @@ function App() {
     setPdfUrl(document.pdfUrl)
     setReaderMode(document.markdown ? 'markdown' : document.pdfUrl ? 'pdf' : 'markdown')
     setActivePage(1)
+    setPreviewFigure(null)
+  }
+
+  const openFigurePreview = (figure: PreviewFigure) => {
+    setPreviewFigure(figure)
+  }
+
+  const closeFigurePreview = () => {
+    setPreviewFigure(null)
   }
 
   useEffect(() => {
@@ -709,6 +906,23 @@ function App() {
       unsubscribe()
     }
   }, [])
+
+  useEffect(() => {
+    if (!previewFigure) {
+      return
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setPreviewFigure(null)
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [previewFigure])
 
   useEffect(() => {
     if (!pendingAutoOpenTaskId) {
@@ -826,15 +1040,19 @@ function App() {
       return accumulator
     }, {})
   }, [outlineHeadingMap])
+  const pageTitleOutlineIds = useMemo(() => buildPageTitleOutlineIds(pages, outline), [pages, outline])
+  const outlineTargets = useMemo(() => buildOutlineTargets(outline, outlineHeadingMap), [outline, outlineHeadingMap])
   const markdownHeadingBuckets = useMemo(() => {
     return markdownHeadings.reduce<Record<string, MarkdownHeadingEntry[]>>((accumulator, heading) => {
-      const key = `${heading.level}:${heading.normalizedTitle}`
-      const bucket = accumulator[key]
-      if (bucket) {
-        bucket.push(heading)
-      } else {
-        accumulator[key] = [heading]
-      }
+      buildHeadingVariants(heading.title).forEach((variant) => {
+        const key = `${heading.level}:${variant}`
+        const bucket = accumulator[key]
+        if (bucket) {
+          bucket.push(heading)
+        } else {
+          accumulator[key] = [heading]
+        }
+      })
       return accumulator
     }, {})
   }, [markdownHeadings])
@@ -898,7 +1116,7 @@ function App() {
   }
 
   useEffect(() => {
-    const outlineEntries = Object.entries(outlineHeadingMap)
+    const outlineEntries = Object.entries(outlineTargets)
     if (!outlineEntries.length) {
       setActiveOutlineId('')
       return
@@ -929,21 +1147,21 @@ function App() {
             .sort((left, right) => Math.abs(left[1]) - Math.abs(right[1]))[0]?.[0] ?? ''
         } else {
           const candidates = outlineEntries
-            .map(([, headingId]) => document.getElementById(headingId))
+            .map(([, target]) => document.getElementById(target.id))
             .filter((element): element is HTMLElement => Boolean(element))
             .filter((element) => element.getBoundingClientRect().top <= 140)
             .sort((left, right) => right.getBoundingClientRect().top - left.getBoundingClientRect().top)
 
-          nextHeadingId = candidates[0]?.id ?? outlineEntries[0]?.[1] ?? ''
+          nextHeadingId = candidates[0]?.id ?? outlineEntries[0]?.[1]?.id ?? ''
         }
 
-        const outlineId = headingOutlineMap[nextHeadingId]
+        const outlineId = outlineEntries.find(([, target]) => target.id === nextHeadingId)?.[0] ?? headingOutlineMap[nextHeadingId]
         if (outlineId) {
           setActiveOutlineId(outlineId)
         }
       },
       {
-        root: null,
+        root: readerScrollRef.current,
         rootMargin: '-72px 0px -55% 0px',
         threshold: [0, 0.2, 0.4, 1],
       },
@@ -951,14 +1169,14 @@ function App() {
 
     headingObserverRef.current = observer
 
-    outlineEntries.forEach(([, headingId]) => {
-      const element = document.getElementById(headingId)
+    outlineEntries.forEach(([, target]) => {
+      const element = document.getElementById(target.id)
       if (element) {
         observer.observe(element)
       }
     })
 
-    const initialOutlineId = headingOutlineMap[outlineEntries[0][1]]
+    const initialOutlineId = outlineEntries[0]?.[0]
     if (initialOutlineId) {
       setActiveOutlineId(initialOutlineId)
     }
@@ -967,7 +1185,7 @@ function App() {
       observer.disconnect()
       headingObserverRef.current = null
     }
-  }, [headingOutlineMap, outlineHeadingMap])
+  }, [headingOutlineMap, outlineTargets])
 
   useEffect(() => {
     if (!activeOutlineId) {
@@ -1110,6 +1328,29 @@ function App() {
     } finally {
       setIsTestingModel(false)
     }
+  }
+
+  const applyProviderPreset = (providerValue: string) => {
+    if (providerValue === '__custom__') {
+      setSettings((current) => ({
+        ...current,
+        provider: current.provider || 'Custom',
+      }))
+      return
+    }
+
+    const preset = providerPresets.find((item) => item.provider === providerValue)
+    if (!preset) {
+      return
+    }
+
+    setSettings((current) => ({
+      ...current,
+      provider: preset.provider,
+      apiBaseUrl: preset.apiBaseUrl,
+      openaiApiMode: preset.openaiApiMode,
+      model: current.model.trim() && current.provider === preset.provider ? current.model : preset.defaultModel,
+    }))
   }
 
   const handleAsk = async (queuedQuestion: string) => {
@@ -1311,11 +1552,13 @@ function App() {
     children: React.ReactNode,
     props: React.HTMLAttributes<HTMLHeadingElement>,
   ) => {
-    const normalizedTitle = normalizeHeadingText(extractNodeText(children)).toLowerCase()
-    const key = `${level}:${normalizedTitle}`
+    const variants = buildHeadingVariants(extractNodeText(children))
+    const key = `${level}:${variants[0] ?? ''}`
     const index = renderedHeadingUsage.get(key) ?? 0
     renderedHeadingUsage.set(key, index + 1)
-    const heading = markdownHeadingBuckets[key]?.[index]
+    const heading = variants
+      .map((variant) => markdownHeadingBuckets[`${level}:${variant}`]?.[index])
+      .find(Boolean)
 
     switch (level) {
       case 1:
@@ -1458,8 +1701,11 @@ function App() {
                                   className="chat-image-evidence"
                                   type="button"
                                   onClick={() => {
-                                    scrollToPage(item.page)
-                                    setActivePanel('figures')
+                                    openFigurePreview({
+                                      src: item.remoteUrl || item.src || '',
+                                      caption: item.caption || '图片证据',
+                                      page: item.page,
+                                    })
                                   }}
                                 >
                                   <img src={item.remoteUrl || item.src} alt={item.caption || `P.${item.page} image evidence`} />
@@ -1513,12 +1759,13 @@ function App() {
                     }}
                     className={item.id === activeOutlineId ? 'outline-item active' : 'outline-item'}
                     onClick={() => {
-                      const headingId = outlineHeadingMap[item.id]
-                      if (headingId) {
-                        scrollToHeading(headingId, item.page)
-                      } else {
+                      const target = outlineTargets[item.id]
+                      if (!target) {
                         scrollToPage(item.page)
+                        return
                       }
+
+                      scrollToHeading(target.id, target.page)
                     }}
                     style={{ paddingLeft: `${16 + (item.level - 1) * 16}px` }}
                   >
@@ -1536,7 +1783,11 @@ function App() {
                     key={item.id}
                     className="figure-item"
                     onClick={() => {
-                      scrollToPage(item.page)
+                      openFigurePreview({
+                        src: item.remoteUrl || item.src,
+                        caption: item.caption,
+                        page: item.page,
+                      })
                     }}
                   >
                     <img src={item.src} alt={item.caption} />
@@ -1585,7 +1836,36 @@ function App() {
               {isBootstrapping ? <div className="canvas-placeholder">正在加载解析结果...</div> : null}
               {!isBootstrapping && readerMode === 'markdown' && !markdown ? <div className="canvas-placeholder">当前没有可显示的 Markdown 内容。</div> : null}
               {!isBootstrapping && readerMode === 'pdf' && !pdfUrl ? <div className="canvas-placeholder">当前没有可显示的原始 PDF。</div> : null}
-              {readerMode === 'markdown' && markdown ? (
+              {readerMode === 'markdown' && pages.length ? (
+                <div className="markdown-page-stack">
+                  {pages.map((pageBlocks, pageIndex) => {
+                    const pageNumber = pageIndex + 1
+                    return (
+                      <article
+                        key={`markdown-page-${pageNumber}`}
+                        id={`page-anchor-${pageNumber}`}
+                        className="paper-canvas markdown-canvas markdown-page"
+                        ref={(element) => {
+                          pageRefs.current[pageNumber] = element
+                        }}
+                        data-page={pageNumber}
+                      >
+                          {pageBlocks.map((block, blockIndex) => {
+                            const outlineId = pageTitleOutlineIds[`${pageNumber}-${blockIndex}`]
+                            return renderBlockWithPreview(
+                              block,
+                              blockIndex,
+                              assetBasePath,
+                              openFigurePreview,
+                              outlineId ? getOutlineAnchorId(outlineId) : undefined,
+                            )
+                          })}
+                      </article>
+                    )
+                  })}
+                </div>
+              ) : null}
+              {readerMode === 'markdown' && !pages.length && markdown ? (
                 <article className="paper-canvas markdown-canvas">
                   <ReactMarkdown
                     remarkPlugins={[remarkGfm, remarkMath]}
@@ -1593,7 +1873,7 @@ function App() {
                     components={{
                       table: ({ children }) => <MarkdownTable>{children}</MarkdownTable>,
                       img: ({ src = '', alt = '' }) => {
-                        return <MarkdownImage src={src} alt={alt} assetBasePath={assetBasePath} />
+                        return <MarkdownImage src={src} alt={alt} assetBasePath={assetBasePath} onPreview={openFigurePreview} />
                       },
                       h1: ({ children, ...props }) => renderMarkdownHeading(1, children, props),
                       h2: ({ children, ...props }) => renderMarkdownHeading(2, children, props),
@@ -1670,6 +1950,40 @@ function App() {
         </div>
       )}
 
+      {previewFigure && (
+        <div className="image-lightbox" onClick={closeFigurePreview}>
+          <div className="image-lightbox-dialog" onClick={(event) => event.stopPropagation()}>
+            <div className="image-lightbox-toolbar">
+              <div>
+                {previewFigure.page ? <span>P.{previewFigure.page}</span> : null}
+                {previewFigure.caption ? <p>{previewFigure.caption}</p> : null}
+              </div>
+              <div className="image-lightbox-actions">
+                {previewFigure.page ? (
+                  <button
+                    type="button"
+                    className="ghost-button"
+                    onClick={() => {
+                      scrollToPage(previewFigure.page ?? 1)
+                      setActivePanel('figures')
+                      closeFigurePreview()
+                    }}
+                  >
+                    跳转到 P.{previewFigure.page}
+                  </button>
+                ) : null}
+                <button type="button" className="ghost-button" onClick={closeFigurePreview}>
+                  关闭
+                </button>
+              </div>
+            </div>
+            <div className="image-lightbox-stage">
+              <img src={previewFigure.src} alt={previewFigure.caption || 'figure preview'} />
+            </div>
+          </div>
+        </div>
+      )}
+
       {isSettingsOpen && (
         <div className="settings-backdrop" onClick={() => setIsSettingsOpen(false)}>
           <aside className="settings-drawer" onClick={(event) => event.stopPropagation()}>
@@ -1686,9 +2000,21 @@ function App() {
             <div className="settings-body">
               <label>
                 模型提供方
+                <select value={providerSelectValue} onChange={(event) => applyProviderPreset(event.target.value)}>
+                  {providerPresets.map((preset) => (
+                    <option key={preset.label} value={preset.provider || '__custom__'}>
+                      {preset.label}
+                    </option>
+                  ))}
+                </select>
+                <p className="settings-hint">{activeProviderPreset?.hint || '你可以选择预设，也可以继续手动填写下面的 provider / URL / 模型。'}</p>
+              </label>
+              <label>
+                自定义提供方名称
                 <input
                   value={settings.provider}
                   onChange={(event) => setSettings({ ...settings, provider: event.target.value })}
+                  placeholder="例如 Kimi、DeepSeek、豆包、OpenAI Compatible"
                 />
               </label>
               <label>
@@ -1696,8 +2022,15 @@ function App() {
                 <input
                   value={settings.model}
                   onChange={(event) => setSettings({ ...settings, model: event.target.value })}
+                  list="provider-model-suggestions"
                 />
+                {suggestedModels.length > 0 ? <p className="settings-hint">推荐模型：{suggestedModels.join(' / ')}</p> : null}
               </label>
+              <datalist id="provider-model-suggestions">
+                {suggestedModels.map((modelName) => (
+                  <option key={modelName} value={modelName} />
+                ))}
+              </datalist>
               <label>
                 OpenAI 接口模式
                 <select
@@ -1719,7 +2052,9 @@ function App() {
                 <input
                   value={settings.apiBaseUrl}
                   onChange={(event) => setSettings({ ...settings, apiBaseUrl: event.target.value })}
+                  placeholder="保留手动填写，例如 https://api.openai.com/v1"
                 />
+                <p className="settings-hint">选择预设会自动填充默认地址，但这里始终可以手动覆盖。</p>
               </label>
               <label>
                 API Key

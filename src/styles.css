@@ -980,6 +980,18 @@ button {
   align-items: flex-start;
 }
 
+.image-preview-trigger {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  display: block;
+  cursor: zoom-in;
+}
+
+.image-preview-trigger img {
+  display: block;
+}
+
 .figure-item img {
   width: 88px;
   height: 88px;
@@ -1063,6 +1075,16 @@ button {
 
 .markdown-canvas {
   min-height: 100%;
+}
+
+.markdown-page-stack {
+  display: grid;
+  gap: 24px;
+  width: 100%;
+}
+
+.markdown-page {
+  position: relative;
 }
 
 .pdf-canvas {
@@ -1263,12 +1285,104 @@ button {
   background: rgba(255, 255, 255, 1);
 }
 
+.image-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(15, 23, 42, 0.68);
+  backdrop-filter: blur(8px);
+}
+
+.image-lightbox-dialog {
+  width: min(1120px, 100%);
+  max-height: calc(100vh - 48px);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 18px;
+  border-radius: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(248, 250, 252, 0.96);
+  box-shadow: 0 24px 80px rgba(15, 23, 42, 0.28);
+}
+
+.image-lightbox-toolbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.image-lightbox-toolbar span {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.image-lightbox-toolbar p {
+  margin: 6px 0 0;
+  color: rgba(15, 23, 42, 0.92);
+  line-height: 1.6;
+}
+
+.image-lightbox-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.image-lightbox-stage {
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  justify-content: center;
+}
+
+.image-lightbox-stage img {
+  width: auto;
+  max-width: 100%;
+  max-height: calc(100vh - 180px);
+  object-fit: contain;
+  border-radius: 20px;
+  background: #ffffff;
+}
+
 .markdown-image-block figcaption,
 .paper-figure figcaption {
   margin-top: 10px;
   color: var(--muted);
   line-height: 1.6;
   text-align: center;
+}
+
+@media (max-width: 720px) {
+  .image-lightbox {
+    padding: 12px;
+  }
+
+  .image-lightbox-dialog {
+    max-height: calc(100vh - 24px);
+    padding: 14px;
+    border-radius: 22px;
+  }
+
+  .image-lightbox-toolbar {
+    flex-direction: column;
+  }
+
+  .image-lightbox-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .image-lightbox-stage img {
+    max-height: calc(100vh - 240px);
+  }
 }
 
 .ghost-button,
